@@ -273,4 +273,7 @@ export default function OrganizerDashboard() {
           .matrix-grid { grid-template-columns: repeat(2, 1fr); }
         }
       `}</style>
+    </DashboardLayout>
+  );
+}
 
