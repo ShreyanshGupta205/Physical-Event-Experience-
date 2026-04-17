@@ -4,50 +4,17 @@ import Link from 'next/link';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { EVENTS, REGISTRATION_FEED, CROWD_TIMELINE } from '@/data/mockData';
 import {
-  Users, TrendingUp, CheckCircle, AlertTriangle, Clock,
-  ChevronRight, PlusCircle, Bell, Activity, BarChart2,
-  Map, Radio, Zap, ArrowUpRight, Share2, MoreHorizontal
+  Share2, PlusCircle, BarChart2, Map, Radio
 } from 'lucide-react';
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 
+import LiveFeed from '@/components/organizer/LiveFeed';
+import KpiGrid from '@/components/organizer/KpiGrid';
+import ZoneMatrix from '@/components/organizer/ZoneMatrix';
+
 const MANAGED_EVENT_ID = 'evt-001';
-
-function LiveFeed({ feed }) {
-  const [items, setItems] = useState(feed);
-
-  useEffect(() => {
-    const names = ['Riya Joshi', 'Karan Mehta', 'Anjali Rao', 'Dev Sharma', 'Pooja Nair', 'Arjun Das'];
-    const evts = ['Hackathon 2026', 'AI Summit', 'Cloud Bootcamp'];
-    const t = setInterval(() => {
-      const n = names[Math.floor(Math.random() * names.length)];
-      const e = evts[Math.floor(Math.random() * evts.length)];
-      setItems(prev => [
-        { id: Date.now(), name: n, event: e, time: 'Just now', avatar: n.slice(0, 2).toUpperCase() },
-        ...prev.slice(0, 6)
-      ]);
-    }, 4500);
-    return () => clearInterval(t);
-  }, []);
-
-  return (
-    <div className="live-feed-stack">
-      {items.map((item, i) => (
-        <div key={item.id} className="feed-row glass-card">
-          <div className="feed-avatar" style={{ background: `linear-gradient(135deg, hsl(${(item.name.charCodeAt(0) * 40) % 360}, 60%, 45%), transparent)` }}>
-            {item.avatar}
-          </div>
-          <div className="feed-content">
-            <p><strong>{item.name}</strong> shared interest in {item.event}</p>
-            <span>{item.time}</span>
-          </div>
-          <ArrowUpRight size={14} className="text-secondary" />
-        </div>
-      ))}
-    </div>
-  );
-}
 
 export default function OrganizerDashboard() {
   const event = EVENTS.find(e => e.id === MANAGED_EVENT_ID) || EVENTS[0];
@@ -83,26 +50,8 @@ export default function OrganizerDashboard() {
           </div>
         </header>
 
-        {/* Global KPIs */}
-        <section className="mission-kpis animate-fadeInUp">
-          {[
-            { label: 'Registered Explorers', value: registeredCount, icon: Users, color: 'var(--primary)', trend: '+8%' },
-            { label: 'Entry Throughput', value: '42 p/m', icon: Zap, color: 'var(--secondary)', trend: 'Steady' },
-            { label: 'Venue Saturation', value: `${pct}%`, icon: Activity, color: pct > 80 ? 'var(--accent)' : 'var(--secondary)', trend: 'High' },
-            { label: 'Wait Estimation', value: '8.4m', icon: Clock, color: 'var(--info)', trend: 'Optimum' },
-          ].map(kpi => (
-            <div key={kpi.label} className="glass-card kpi-card">
-              <div className="kpi-icon" style={{ color: kpi.color, background: kpi.color + '1a' }}>
-                <kpi.icon size={20} />
-              </div>
-              <div className="kpi-body">
-                <span className="kpi-val">{kpi.value}</span>
-                <span className="kpi-lab">{kpi.label}</span>
-              </div>
-              <div className="kpi-trend">{kpi.trend}</div>
-            </div>
-          ))}
-        </section>
+        {/* Global KPIs via Modular Component */}
+        <KpiGrid registeredCount={registeredCount} pct={pct} />
 
         <div className="mission-main-grid">
           {/* Analytics Well */}
@@ -158,7 +107,7 @@ export default function OrganizerDashboard() {
               </div>
             </div>
 
-            {/* Live Feed Panel */}
+            {/* Live Feed Panel via Modular Component */}
             <div className="glass-card feed-brick animate-fadeInUp">
               <div className="card-header">
                 <h3>Activity Pulse</h3>
@@ -169,34 +118,8 @@ export default function OrganizerDashboard() {
           </aside>
         </div>
 
-        {/* Global Overview Section */}
-        <section className="glass-card zone-matrix animate-fadeInUp">
-          <div className="card-header">
-            <h3 className="section-title small">Zone Saturation Matrix</h3>
-            <div className="matrix-matrix-controls">
-              <button className="btn btn-ghost btn-sm">Audit Zones</button>
-            </div>
-          </div>
-          <div className="matrix-grid">
-            {event.zones.map(zone => (
-              <div key={zone.id} className="matrix-item glass-card">
-                <div className="m-header">
-                  <div className="z-tag" style={{ background: zone.color + '22', color: zone.color }}>{zone.name}</div>
-                  <MoreHorizontal size={16} />
-                </div>
-                <div className="m-body">
-                  <div className="m-val">{Math.round(zone.occupancy * 100)}%</div>
-                  <div className="progress-bar mini">
-                    <div className="progress-fill" style={{ width: `${zone.occupancy * 100}%`, background: zone.color }} />
-                  </div>
-                </div>
-                <div className="m-footer">
-                  <span>CAPACITY: {zone.capacity}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+        {/* Global Overview Section via Modular Component */}
+        <ZoneMatrix zones={event.zones} />
 
       </div>
 
@@ -215,17 +138,6 @@ export default function OrganizerDashboard() {
         @keyframes pulse { 0% { opacity: 1; } 100% { opacity: 0.4; transform: scale(1.5); } }
 
         .mission-actions { display: flex; gap: 1rem; }
-
-        .mission-kpis { 
-          display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; 
-          margin-bottom: 2.5rem;
-        }
-        .kpi-card { padding: 1.5rem !important; display: flex; align-items: center; gap: 1.25rem; position: relative; }
-        .kpi-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-        .kpi-body { display: flex; flex-direction: column; }
-        .kpi-val { font-size: 1.5rem; font-family: 'Space Grotesk', sans-serif; font-weight: 700; }
-        .kpi-lab { font-size: 0.75rem; font-weight: 700; color: var(--text-faint); text-transform: uppercase; }
-        .kpi-trend { position: absolute; top: 1rem; right: 1rem; font-size: 0.7rem; font-weight: 800; color: #4ade80; }
 
         .mission-main-grid { display: grid; grid-template-columns: 1fr 360px; gap: 2rem; margin-bottom: 2.5rem; }
         .analytics-well { padding: 2rem !important; }
@@ -250,30 +162,14 @@ export default function OrganizerDashboard() {
         .safe .g-tag { color: var(--secondary); }
 
         .feed-brick { padding: 1.5rem !important; }
-        .live-feed-stack { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem; }
-        .feed-row { 
-          padding: 0.75rem !important; display: flex; align-items: center; gap: 0.75rem; 
-          background: rgba(255,255,255,0.01) !important;
-        }
-        .feed-avatar { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; }
-        .feed-content p { font-size: 0.75rem; line-height: 1.3; }
-        .feed-content span { font-size: 0.65rem; color: var(--text-faint); }
 
-        .zone-matrix { padding: 2rem !important; }
-        .matrix-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-top: 2rem; }
-        .matrix-item { padding: 1.25rem !important; display: flex; flex-direction: column; gap: 1rem; }
-        .m-header { display: flex; justify-content: space-between; align-items: center; }
-        .z-tag { font-size: 0.65rem; font-weight: 900; padding: 0.1rem 0.6rem; border-radius: 4px; }
-        .m-val { font-size: 1.5rem; font-weight: 700; font-family: 'Space Grotesk', sans-serif; }
-        .m-footer { font-size: 0.65rem; color: var(--text-faint); letter-spacing: 0.05em; font-weight: 800; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; }
+        .section-title.small { font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-faint); margin-bottom: 0; }
 
         @media (max-width: 1024px) {
-          .mission-kpis { grid-template-columns: repeat(2, 1fr); }
           .mission-main-grid { grid-template-columns: 1fr; }
-          .matrix-grid { grid-template-columns: repeat(2, 1fr); }
         }
       `}</style>
     </DashboardLayout>
   );
 }
-
