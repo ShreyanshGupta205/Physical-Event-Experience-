@@ -16,8 +16,8 @@ function EventCard({ event, onRegister, isRegistered }) {
   const isAlmostFull = pct >= 85;
 
   return (
-    <div className="glass-card stagger-item">
-      <div className="event-banner" style={{ background: `linear-gradient(135deg, ${event.color}44, transparent)` }}>
+    <div className="glass-card stagger-item event-card-wrapper">
+      <div className="event-banner" style={{ background: `linear-gradient(135deg, ${event.color}66, rgba(13,15,28,0.4)), radial-gradient(circle at top right, ${event.color}55, transparent)` }}>
         <div className="badge-group">
           <span className="badge badge-secondary">{event.type}</span>
           {event.trending && <span className="badge badge-accent"><TrendingUp size={10} /> Hot</span>}
@@ -61,12 +61,22 @@ function EventCard({ event, onRegister, isRegistered }) {
       </div>
 
       <style jsx>{`
+        .event-card-wrapper {
+          display: flex; flex-direction: column; height: 100%;
+        }
         .event-banner {
-          height: 120px;
+          height: 140px;
           margin: -1.5rem -1.5rem 1.5rem;
           padding: 1rem;
           display: flex;
           align-items: flex-start;
+          background-size: 200% 200% !important;
+          animation: pan-gradient 10s ease infinite alternate;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        @keyframes pan-gradient {
+          0% { background-position: 0% 50%; }
+          100% { background-position: 100% 50%; }
         }
         .badge-group { display: flex; gap: 0.5rem; }
         .event-title { margin-bottom: 0.5rem; font-size: 1.125rem; }
@@ -250,10 +260,17 @@ export default function HomePage() {
           position: absolute;
           top: 50%; left: 50%;
           transform: translate(-50%, -50%);
-          width: 600px; height: 300px;
-          background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+          width: 800px; height: 400px;
+          background: radial-gradient(circle at 30% 50%, rgba(99, 102, 241, 0.4) 0%, transparent 60%),
+                      radial-gradient(circle at 70% 50%, rgba(16, 185, 129, 0.3) 0%, transparent 60%);
+          filter: blur(60px);
           pointer-events: none;
           z-index: 0;
+          animation: pulse-glow 8s ease-in-out infinite alternate;
+        }
+        @keyframes pulse-glow {
+          0% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+          100% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
         }
 
         .hero-content-box { position: relative; z-index: 1; }
@@ -300,16 +317,21 @@ export default function HomePage() {
           flex: 1;
           display: flex;
           align-items: center;
-          background: var(--bg-card);
-          border: 1px solid var(--border);
-          border-radius: var(--radius-md);
-          padding: 0.25rem 1rem;
-          transition: var(--transition);
+          background: rgba(255, 255, 255, 0.03);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: var(--radius-full);
+          padding: 0.35rem 1.5rem;
+          transition: all 0.4s var(--easing);
+          box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.02), 0 8px 32px rgba(0, 0, 0, 0.2);
         }
-
+        
         .premium-search:focus-within {
-          border-color: var(--primary);
-          box-shadow: 0 0 0 4px var(--primary-glow);
+          background: rgba(255, 255, 255, 0.06);
+          border-color: rgba(255, 255, 255, 0.25);
+          box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.05), 0 12px 40px rgba(99, 102, 241, 0.25), 0 0 0 1px rgba(99, 102, 241, 0.3);
+          transform: translateY(-2px);
         }
 
         .premium-search input {

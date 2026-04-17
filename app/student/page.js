@@ -55,8 +55,9 @@ export default function StudentDashboard() {
             { label: 'XP Earned', value: 850, icon: Sparkles, color: '#fbbf24', glow: 'rgba(251, 191, 36, 0.1)' },
             { label: 'Activity Rate', value: 'High', icon: Activity, color: 'var(--accent)', glow: 'var(--accent-glow)' },
           ].map(stat => (
-            <div key={stat.label} className="glass-card stat-card HUB-stagger-item">
-              <div className="HUB-stat-icon" style={{ background: stat.glow, color: stat.color }}>
+            <div key={stat.label} className="glass-card stat-card HUB-stagger-item" style={{ position: 'relative', overflow: 'hidden' }}>
+              <div className="stat-bg-mesh" style={{ background: `radial-gradient(circle at 100% 100%, ${stat.color}22, transparent 60%)` }} />
+              <div className="HUB-stat-icon" style={{ background: stat.glow, color: stat.color, border: `1px solid ${stat.color}44` }}>
                 <stat.icon size={22} />
               </div>
               <div className="HUB-stat-body">
@@ -183,6 +184,14 @@ export default function StudentDashboard() {
           width: 52px; height: 52px;
           border-radius: var(--radius-md);
           display: flex; align-items: center; justify-content: center;
+          position: relative; z-index: 1;
+        }
+        
+        .stat-bg-mesh {
+          position: absolute;
+          top: 0; right: 0; bottom: 0; left: 0;
+          pointer-events: none;
+          z-index: 0;
         }
 
         .HUB-stat-body { display: flex; flex-direction: column; gap: 0.25rem; }

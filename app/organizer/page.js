@@ -52,11 +52,6 @@ function LiveFeed({ feed }) {
 export default function OrganizerDashboard() {
   const event = EVENTS.find(e => e.id === MANAGED_EVENT_ID) || EVENTS[0];
   const [registeredCount, setRegisteredCount] = useState(event.registered);
-  const [isMounted, setIsMounted] = useState(false);
-  
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -70,17 +65,17 @@ export default function OrganizerDashboard() {
   return (
     <DashboardLayout>
       <div className="mission-control animate-fadeIn">
-        
+
         {/* Header Section */}
         <header className="mission-header">
           <div className="mission-title-group">
             <div className="live-badge">
-               <div className="pulse-dot" /> LIVE TRACKING
+              <div className="pulse-dot" /> LIVE TRACKING
             </div>
             <h1 className="Hub-heading">{event.title}</h1>
             <p className="HUB-lead">Orchestrating {event.venue} • {event.date}</p>
           </div>
-          
+
           <div className="mission-actions">
             <button className="btn btn-ghost btn-lg"><Share2 size={18} /> Invite</button>
             <Link href="/organizer/analytics" className="btn btn-ghost btn-lg"><BarChart2 size={18} /> Intel</Link>
@@ -119,62 +114,58 @@ export default function OrganizerDashboard() {
               </div>
             </div>
             <div className="chart-wrap">
-              {isMounted ? (
-                <ResponsiveContainer width="100%" height={260}>
-                  <AreaChart data={CROWD_TIMELINE}>
-                    <defs>
-                      <linearGradient id="regGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2} />
-                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
-                    <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fill: 'var(--text-faint)', fontSize: 11 }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--text-faint)', fontSize: 11 }} />
-                    <Tooltip contentStyle={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '12px' }} />
-                    <Area type="monotone" dataKey="count" stroke="#6366f1" strokeWidth={3} fill="url(#regGrad)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="chart-skeleton" style={{ height: 260, background: 'var(--bg-card2)', borderRadius: '12px', animate: 'pulse 2s infinite' }} />
-              )}
+              <ResponsiveContainer width="100%" height={260}>
+                <AreaChart data={CROWD_TIMELINE}>
+                  <defs>
+                    <linearGradient id="regGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                  <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fill: 'var(--text-faint)', fontSize: 11 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--text-faint)', fontSize: 11 }} />
+                  <Tooltip contentStyle={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '12px' }} />
+                  <Area type="monotone" dataKey="count" stroke="var(--primary)" strokeWidth={3} fill="url(#regGrad)" />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
           </div>
 
           <aside className="mission-sidebar">
-             {/* Gate Status Panel */}
-             <div className="glass-card gate-telemetry animate-fadeInUp">
-                <div className="card-header">
-                  <h3>Gate Flow</h3>
-                  <Link href="/organizer/crowd"><Map size={14} /></Link>
-                </div>
-                <div className="gate-flow-stack">
-                  {event.gates.map(gate => {
-                    const status = gate.queue > 40 ? 'critical' : gate.queue > 20 ? 'busy' : 'safe';
-                    return (
-                      <div key={gate.id} className={`gate-flow-row ${status}`}>
-                        <div className="g-info">
-                          <strong>{gate.name}</strong>
-                          <span>{gate.throughput} throughput</span>
-                        </div>
-                        <div className="g-status">
-                          <span className="g-queue">{gate.queue}</span>
-                          <span className="g-tag">{status}</span>
-                        </div>
+            {/* Gate Status Panel */}
+            <div className="glass-card gate-telemetry animate-fadeInUp">
+              <div className="card-header">
+                <h3>Gate Flow</h3>
+                <Link href="/organizer/crowd"><Map size={14} /></Link>
+              </div>
+              <div className="gate-flow-stack">
+                {event.gates.map(gate => {
+                  const status = gate.queue > 40 ? 'critical' : gate.queue > 20 ? 'busy' : 'safe';
+                  return (
+                    <div key={gate.id} className={`gate-flow-row ${status}`}>
+                      <div className="g-info">
+                        <strong>{gate.name}</strong>
+                        <span>{gate.throughput} throughput</span>
                       </div>
-                    );
-                  })}
-                </div>
-             </div>
+                      <div className="g-status">
+                        <span className="g-queue">{gate.queue}</span>
+                        <span className="g-tag">{status}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
 
-             {/* Live Feed Panel */}
-             <div className="glass-card feed-brick animate-fadeInUp">
-               <div className="card-header">
-                 <h3>Activity Pulse</h3>
-                 <Radio size={14} className="text-accent" />
-               </div>
-               <LiveFeed feed={REGISTRATION_FEED} />
-             </div>
+            {/* Live Feed Panel */}
+            <div className="glass-card feed-brick animate-fadeInUp">
+              <div className="card-header">
+                <h3>Activity Pulse</h3>
+                <Radio size={14} className="text-accent" />
+              </div>
+              <LiveFeed feed={REGISTRATION_FEED} />
+            </div>
           </aside>
         </div>
 
@@ -189,19 +180,19 @@ export default function OrganizerDashboard() {
           <div className="matrix-grid">
             {event.zones.map(zone => (
               <div key={zone.id} className="matrix-item glass-card">
-                 <div className="m-header">
-                   <div className="z-tag" style={{ background: zone.color + '22', color: zone.color }}>{zone.name}</div>
-                   <MoreHorizontal size={16} />
-                 </div>
-                 <div className="m-body">
-                   <div className="m-val">{Math.round(zone.occupancy * 100)}%</div>
-                   <div className="progress-bar mini">
-                     <div className="progress-fill" style={{ width: `${zone.occupancy * 100}%`, background: zone.color }} />
-                   </div>
-                 </div>
-                 <div className="m-footer">
-                   <span>CAPACITY: {zone.capacity}</span>
-                 </div>
+                <div className="m-header">
+                  <div className="z-tag" style={{ background: zone.color + '22', color: zone.color }}>{zone.name}</div>
+                  <MoreHorizontal size={16} />
+                </div>
+                <div className="m-body">
+                  <div className="m-val">{Math.round(zone.occupancy * 100)}%</div>
+                  <div className="progress-bar mini">
+                    <div className="progress-fill" style={{ width: `${zone.occupancy * 100}%`, background: zone.color }} />
+                  </div>
+                </div>
+                <div className="m-footer">
+                  <span>CAPACITY: {zone.capacity}</span>
+                </div>
               </div>
             ))}
           </div>
@@ -282,6 +273,4 @@ export default function OrganizerDashboard() {
           .matrix-grid { grid-template-columns: repeat(2, 1fr); }
         }
       `}</style>
-    </DashboardLayout>
-  );
-}
+

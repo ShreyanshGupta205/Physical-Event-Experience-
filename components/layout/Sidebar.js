@@ -104,9 +104,11 @@ export default function Sidebar({ open, onClose }) {
             position: fixed;
             top: 0; left: 0; bottom: 0;
             width: var(--sidebar-width);
-            background: rgba(3, 4, 11, 0.6);
-            backdrop-filter: blur(20px);
-            border-right: 1px solid var(--border);
+            background: linear-gradient(180deg, rgba(8, 10, 20, 0.5), rgba(3, 4, 11, 0.9));
+            backdrop-filter: blur(32px) saturate(200%);
+            -webkit-backdrop-filter: blur(32px) saturate(200%);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 1px 0 0 rgba(255, 255, 255, 0.02) inset;
             z-index: 1001;
             display: flex;
             flex-direction: column;
@@ -137,13 +139,15 @@ export default function Sidebar({ open, onClose }) {
             display: flex;
             align-items: center;
             gap: 0.625rem;
-            padding: 0.5rem 1rem;
+            padding: 0.625rem 1.25rem;
             border-radius: var(--radius-full);
+            background: linear-gradient(135deg, rgba(255,255,255,0.03), transparent);
             border: 1px solid;
             font-size: 0.75rem;
-            font-weight: 700;
+            font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.1em;
+            box-shadow: inset 0 1px 1px rgba(255,255,255,0.05);
           }
 
           .role-dot {
@@ -208,9 +212,9 @@ export default function Sidebar({ open, onClose }) {
           .nav-active-indicator {
             position: absolute;
             left: -1.5rem;
-            width: 4px; height: 20px;
+            width: 4px; height: 1.5rem;
             border-radius: 0 4px 4px 0;
-            box-shadow: 0 0 12px currentColor;
+            box-shadow: 0 0 16px 2px currentColor;
           }
 
           .sidebar-footer {
