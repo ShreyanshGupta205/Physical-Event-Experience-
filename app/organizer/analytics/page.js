@@ -1,4 +1,5 @@
 'use client';
+import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { CROWD_TIMELINE, EVENTS } from '@/data/mockData';
 import { BarChart, Bar, AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -33,6 +34,22 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export default function AnalyticsPage() {
+  const [isMounted, setIsMounted] = useState(false);
+  
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+  
+  if (!isMounted) {
+    return (
+      <DashboardLayout>
+        <div style={{ height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-faint)' }}>
+          LOADING INTEL...
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   const totalReg = MONTHLY_REG.reduce((s, d) => s + d.registrations, 0);
   const convRate = Math.round((MONTHLY_REG.reduce((s, d) => s + d.checkIns, 0) / totalReg) * 100);
 

@@ -52,6 +52,11 @@ function LiveFeed({ feed }) {
 export default function OrganizerDashboard() {
   const event = EVENTS.find(e => e.id === MANAGED_EVENT_ID) || EVENTS[0];
   const [registeredCount, setRegisteredCount] = useState(event.registered);
+  const [isMounted, setIsMounted] = useState(false);
+  
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -114,21 +119,25 @@ export default function OrganizerDashboard() {
               </div>
             </div>
             <div className="chart-wrap">
-              <ResponsiveContainer width="100%" height={260}>
-                <AreaChart data={CROWD_TIMELINE}>
-                  <defs>
-                    <linearGradient id="regGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.2} />
-                      <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
-                  <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fill: 'var(--text-faint)', fontSize: 11 }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--text-faint)', fontSize: 11 }} />
-                  <Tooltip contentStyle={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '12px' }} />
-                  <Area type="monotone" dataKey="count" stroke="var(--primary)" strokeWidth={3} fill="url(#regGrad)" />
-                </AreaChart>
-              </ResponsiveContainer>
+              {isMounted ? (
+                <ResponsiveContainer width="100%" height={260}>
+                  <AreaChart data={CROWD_TIMELINE}>
+                    <defs>
+                      <linearGradient id="regGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                    <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fill: 'var(--text-faint)', fontSize: 11 }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--text-faint)', fontSize: 11 }} />
+                    <Tooltip contentStyle={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '12px' }} />
+                    <Area type="monotone" dataKey="count" stroke="#6366f1" strokeWidth={3} fill="url(#regGrad)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="chart-skeleton" style={{ height: 260, background: 'var(--bg-card2)', borderRadius: '12px', animate: 'pulse 2s infinite' }} />
+              )}
             </div>
           </div>
 

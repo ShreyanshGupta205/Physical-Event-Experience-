@@ -50,9 +50,9 @@ export default function StudentDashboard() {
         {/* Dynamic Stats Grid */}
         <section className="HUB-stats-grid stagger">
           {[
-            { label: 'Registered', value: registrations.length, icon: Calendar, color: 'var(--primary)', glow: 'var(--primary-glow)' },
+            { label: 'Events Scheduled', value: registrations.length, icon: Calendar, color: 'var(--primary)', glow: 'var(--primary-glow)' },
             { label: 'Passes Ready', value: confirmedRegs.length, icon: QrCode, color: 'var(--secondary)', glow: 'var(--secondary-glow)' },
-            { label: 'Achievements', value: 8, icon: Zap, color: '#fbbf24', glow: 'rgba(251, 191, 36, 0.1)' },
+            { label: 'XP Earned', value: 850, icon: Sparkles, color: '#fbbf24', glow: 'rgba(251, 191, 36, 0.1)' },
             { label: 'Activity Rate', value: 'High', icon: Activity, color: 'var(--accent)', glow: 'var(--accent-glow)' },
           ].map(stat => (
             <div key={stat.label} className="glass-card stat-card HUB-stagger-item">

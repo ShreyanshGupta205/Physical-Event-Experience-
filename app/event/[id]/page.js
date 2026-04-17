@@ -26,6 +26,7 @@ export default function EventDetailPage() {
 
   const event = EVENTS.find(e => e.id === id);
   const [showModal, setShowModal] = useState(false);
+  const [successModal, setSuccessModal] = useState(null);
   const [registered, setRegistered] = useState(false);
 
   const isRegistered = registrations.some(r => r.eventId === id) || registered;
@@ -51,9 +52,10 @@ export default function EventDetailPage() {
   }
 
   const handleRegister = () => {
-    registerForEvent(event);
+    const reg = registerForEvent(event);
     setRegistered(true);
     setShowModal(false);
+    setSuccessModal(reg);
   };
 
   return (
@@ -245,6 +247,31 @@ export default function EventDetailPage() {
                     CONFIRM ACCESS
                   </button>
                </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal Expansion */}
+      {successModal && (
+        <div className="experience-overlay" onClick={() => setSuccessModal(null)}>
+          <div className="experience-modal glass-card text-center animate-scaleUp" onClick={e => e.stopPropagation()}>
+            <div className="modal-inner">
+              <div className="success-icon animate-float" style={{ background: event.color + '22', color: event.color, width: 80, height: 80, borderRadius: '50%', display: 'flex', alignItems: 'center', justifySelf: 'center', justifyContent: 'center', margin: '0 auto 2rem' }}>
+                <CheckCircle size={40} />
+              </div>
+              <h2 className="Hub-heading">Mission Authorized! 🎉</h2>
+              <p className="HUB-lead">You are now registered for {successModal.eventTitle}. Your digital pass is ready for retrieval.</p>
+              <div className="pass-pill-box" style={{ margin: '2rem 0', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', border: '1px dashed var(--border-bright)', fontFamily: 'monospace', color: event.color }}>
+                IDENT: {successModal.passId}
+              </div>
+              
+              <div className="action-row full" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <Link href="/student/pass" className="btn btn-primary w-full" onClick={() => setSuccessModal(null)}>
+                  VIEW DIGITAL PASS <ArrowRight size={16} />
+                </Link>
+                <button className="btn btn-ghost" onClick={() => setSuccessModal(null)}>BACK TO MISSION INTEL</button>
+              </div>
             </div>
           </div>
         </div>
