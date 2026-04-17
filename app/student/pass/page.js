@@ -237,7 +237,7 @@ export default function EntryPassPage() {
         .qr-memo { font-size: 0.7rem; font-weight: 800; color: var(--text-faint); letter-spacing: 0.2em; }
         .qr-teletype { font-size: 0.65rem; color: var(--text-faint); font-family: monospace; background: var(--bg-card2); padding: 0.3rem 0.8rem; border-radius: 6px; }
 
-        .p-status-strip { display: flex; justify-content: space-between; align-items: center; margin-top: 3rem; border-top: 1px solid var(--border); pt: 1.5rem; }
+        .p-status-strip { display: flex; justify-content: space-between; align-items: center; margin-top: 3rem; border-top: 1px solid var(--border); padding-top: 1.5rem; }
         .status-item { display: flex; align-items: center; gap: 0.6rem; font-size: 0.7rem; font-weight: 800; color: #4ade80; }
         .s-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 10px #4ade80; }
         .s-icon { opacity: 0.3; }
@@ -272,7 +272,5 @@ export default function EntryPassPage() {
         }
       `}</style>
     </DashboardLayout>
-  );
-}
   );
 }

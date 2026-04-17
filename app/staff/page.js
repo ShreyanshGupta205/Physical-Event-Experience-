@@ -141,6 +141,8 @@ export default function StaffPortal() {
                   <div className="empty-log">STANDBY FOR DATA...</div>
                 ) : (
                   recentCheckIns.map(log => (
+                    <div key={log.id} className="log-entry animate-fadeIn">
+                      <div className="log-icon success"><CheckCircle size={14} /></div>
                       <div className="log-info">
                         <strong>{log.passId}</strong>
                         <span>Verification Successful • {log.time}</span>

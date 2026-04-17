@@ -333,7 +333,3 @@ export default function EventDetailPage() {
     </DashboardLayout>
   );
 }
-}
-    </DashboardLayout>
-  );
-}
