@@ -148,7 +148,7 @@ export default function LiveEngagement() {
         .voted-msg { margin-top: 1.5rem; font-size: 0.75rem; font-weight: 800; color: var(--secondary); display: flex; align-items: center; gap: 0.4rem; justify-content: center; }
 
         /* QA */
-        .qa-input { display: flex; gap: 0.75rem; margin-bottom: 2rem; position: sticky; top: 0; background: var(--bg-card); z-index: 10; pb: 1rem; }
+        .qa-input { display: flex; gap: 0.75rem; margin-bottom: 2rem; position: sticky; top: 0; background: var(--bg-card); z-index: 10; padding-bottom: 1rem; }
         .qa-input input { 
           flex: 1; background: var(--bg-card2); border: 1px solid var(--border); 
           padding: 0.75rem 1rem; border-radius: var(--radius-md); color: var(--text);

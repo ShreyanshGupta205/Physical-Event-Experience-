@@ -289,7 +289,7 @@ export default function CreateEventPage() {
         .policy-check p { font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; }
         .policy-check strong { color: var(--text); }
 
-        .form-actions { display: flex; margin-top: 3rem; pt: 2rem; border-top: 1px solid var(--border); }
+        .form-actions { display: flex; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); }
         .m-left-auto { margin-left: auto; }
 
         @media (max-width: 640px) {
