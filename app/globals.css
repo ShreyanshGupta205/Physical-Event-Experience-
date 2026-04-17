@@ -40,8 +40,9 @@
   --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
   --shadow-primary: 0 8px 32px rgba(99, 102, 241, 0.2);
 
-  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --easing: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition: 0.3s var(--easing);
+  --transition-slow: 0.5s var(--easing);
   --sidebar-width: 280px;
   --navbar-height: 72px;
 }
@@ -305,15 +306,23 @@ h1, h2, h3, h4, h5, h6 {
   50% { transform: translateY(-12px); }
 }
 
-.animate-fadeInUp { animation: fadeInUp 0.8s var(--transition) forwards; }
-.animate-fadeIn { animation: fadeIn 0.5s var(--transition) forwards; }
-.animate-float { animation: float 6s ease-in-out infinite; }
+.animate-fadeInUp { animation: fadeInUp 0.8s var(--easing) forwards; }
+.animate-fadeIn { animation: fadeIn 0.5s var(--easing) forwards; }
+.animate-float { animation: float 6s var(--easing) infinite; }
 
 .stagger > * { opacity: 0; }
-.stagger > *:nth-child(1) { animation: fadeInUp 0.8s var(--transition) forwards 0.1s; }
-.stagger > *:nth-child(2) { animation: fadeInUp 0.8s var(--transition) forwards 0.2s; }
-.stagger > *:nth-child(3) { animation: fadeInUp 0.8s var(--transition) forwards 0.3s; }
-.stagger > *:nth-child(4) { animation: fadeInUp 0.8s var(--transition) forwards 0.4s; }
+.stagger > *:nth-child(1) { animation: fadeInUp 0.8s var(--easing) forwards 0.1s; }
+.stagger > *:nth-child(2) { animation: fadeInUp 0.8s var(--easing) forwards 0.2s; }
+.stagger > *:nth-child(3) { animation: fadeInUp 0.8s var(--easing) forwards 0.3s; }
+.stagger > *:nth-child(4) { animation: fadeInUp 0.8s var(--easing) forwards 0.4s; }
+.stagger > *:nth-child(5) { animation: fadeInUp 0.8s var(--easing) forwards 0.5s; }
+.stagger > *:nth-child(6) { animation: fadeInUp 0.8s var(--easing) forwards 0.6s; }
+.stagger > *:nth-child(7) { animation: fadeInUp 0.8s var(--easing) forwards 0.7s; }
+.stagger > *:nth-child(8) { animation: fadeInUp 0.8s var(--easing) forwards 0.8s; }
+.stagger > *:nth-child(9) { animation: fadeInUp 0.8s var(--easing) forwards 0.9s; }
+.stagger > *:nth-child(10) { animation: fadeInUp 0.8s var(--easing) forwards 1.0s; }
+.stagger > *:nth-child(11) { animation: fadeInUp 0.8s var(--easing) forwards 1.1s; }
+.stagger > *:nth-child(12) { animation: fadeInUp 0.8s var(--easing) forwards 1.2s; }
 
 /* ─── Custom Elements & Utils ─────────────────────────────────────── */
 
