@@ -1,5 +1,6 @@
 'use client';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { LandingNavbar, LandingFooter } from '@/components/landing/LandingLayout';
 import Counter from '@/components/ui/Counter';
@@ -104,13 +105,13 @@ export default function SaaSPageV2() {
           <Reveal delay={0.5}>
             <div className="hero-product-preview-v2">
               <div className="mockup-v2 glass-card">
-                 <img 
+                 <Image 
                    src="/eventra_dashboard_mockup_1776458173220.png" 
                    alt="Eventra Global Dashboard" 
                    className="mockup-img-v2"
-                   onError={(e) => {
-                     e.target.src = "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2070";
-                   }}
+                   width={1100}
+                   height={618}
+                   priority
                  />
                  <div className="preview-overlay" />
                  

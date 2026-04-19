@@ -106,13 +106,16 @@ export default function Navbar({ onMenuToggle, onBannerStateChange }) {
             <button 
               className={styles.iconBtn}
               onClick={() => { setNotifOpen(!notifOpen); setProfileOpen(false); }}
+              aria-label="Toggle notifications"
+              aria-expanded={notifOpen}
+              aria-haspopup="menu"
             >
               <Bell size={18} />
               <div className={styles.badge}>2</div>
             </button>
 
             {notifOpen && (
-              <div className={styles.dropdown}>
+              <div className={styles.dropdown} role="menu" aria-label="Notifications menu">
                 <div className={styles.dropdownHeader}>
                   <span>Notifications</span>
                   <span className={styles.markRead}>Mark read</span>
@@ -146,6 +149,9 @@ export default function Navbar({ onMenuToggle, onBannerStateChange }) {
                 <button 
                   className={styles.profileBtn}
                   onClick={() => { setProfileOpen(!profileOpen); setNotifOpen(false); }}
+                  aria-label="Toggle user profile menu"
+                  aria-expanded={profileOpen}
+                  aria-haspopup="menu"
                 >
                   <div className={styles.avatar} style={{ background: `linear-gradient(135deg, ${config.color}, #000)` }}>
                     {user.avatar || user.name?.[0] || 'U'}
@@ -158,7 +164,7 @@ export default function Navbar({ onMenuToggle, onBannerStateChange }) {
                 </button>
 
                 {profileOpen && (
-                  <div className={styles.dropdown}>
+                  <div className={styles.dropdown} role="menu" aria-label="User profile menu">
                     
                     <div className={styles.dropdownHeader}>
                       <div className={styles.dropdownUser}>

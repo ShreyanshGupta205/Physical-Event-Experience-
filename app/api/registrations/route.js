@@ -2,9 +2,11 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { RegistrationSchema } from '@/lib/validations';
 import { verifyAuth } from '@/lib/auth';
+import { basicRateLimit } from '@/lib/rateLimit';
 
 // GET /api/registrations?userId=123
 export async function GET(request) {
+// ... existing GET ...
   try {
     const auth = await verifyAuth(request);
     if (!auth) {
@@ -41,6 +43,12 @@ export async function GET(request) {
 // POST /api/registrations
 export async function POST(request) {
   try {
+    // 1. Rate Limiting Security Check
+    const ip = request.headers.get('x-forwarded-for') || 'test-ip';
+    if (!basicRateLimit(ip, 5, 60000)) { // 5 registrations per minute maximum
+      return NextResponse.json({ error: 'Too Many Requests. Please wait.' }, { status: 429 });
+    }
+
     const auth = await verifyAuth(request);
     if (!auth) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

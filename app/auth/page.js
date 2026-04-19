@@ -147,11 +147,11 @@ export default function AuthPage() {
         <section className="form-side">
           <div className="form-container">
             <header className="form-header">
-              <div className="mode-pill">
-                <button className={mode === 'login' ? 'active' : ''} onClick={() => switchMode('login')}>Login</button>
+              <div className="mode-pill" role="tablist" aria-label="Authentication Mode">
+                <button role="tab" aria-selected={mode === 'login'} className={mode === 'login' ? 'active' : ''} onClick={() => switchMode('login')}>Login</button>
                 {/* Hide Join tab for login-only roles */}
                 {!LOGIN_ONLY_ROLES.includes(selectedRole) && (
-                  <button className={mode === 'register' ? 'active' : ''} onClick={() => switchMode('register')}>Join</button>
+                  <button role="tab" aria-selected={mode === 'register'} className={mode === 'register' ? 'active' : ''} onClick={() => switchMode('register')}>Join</button>
                 )}
                 {LOGIN_ONLY_ROLES.includes(selectedRole) && (
                   <span className="restricted-badge">Login Only</span>
@@ -169,7 +169,7 @@ export default function AuthPage() {
             )}
 
             {/* Role Grid */}
-            <div className="roles-tray">
+            <div className="roles-tray" role="radiogroup" aria-label="Select User Role">
                {ROLES
                  // In register mode, only show public signup roles
                  .filter(r => mode === 'login' || r.publicSignup)
@@ -179,6 +179,8 @@ export default function AuthPage() {
                    return (
                      <button 
                        key={r.id} 
+                       role="radio"
+                       aria-checked={selectedRole === r.id}
                        className={`role-item ${selectedRole === r.id ? 'active' : ''} ${isLoginOnly ? 'login-only-role' : ''}`}
                        onClick={() => { setSelectedRole(r.id); setError(null); }}
                        style={{ '--r-col': r.color, '--r-glow': r.glow }}
