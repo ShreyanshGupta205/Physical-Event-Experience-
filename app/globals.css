@@ -527,3 +527,9 @@ h1, h2, h3, h4, h5, h6 {
 .bg-card2 {
   background: var(--bg-card2);
 }
+
+/* ─── Global Form Fixes ────────────────────────────────────────────── */
+option {
+  color: #020408;
+  background-color: #ffffff;
+}
