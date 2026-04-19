@@ -2,49 +2,89 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mongodb"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Enums ─────────────────────────────────────────────────────────────
+enum UserRole {
+  student
+  organizer
+  admin
+  staff
+}
+
+enum UserStatus {
+  active
+  inactive
+  suspended
+}
+
+enum EventStatus {
+  pending
+  approved
+  upcoming
+  live
+  ended
+  rejected
+}
+
+enum RegistrationStatus {
+  pending
+  confirmed
+  cancelled
 }
 
 // ─── Users ─────────────────────────────────────────────────────────────
 model User {
-  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  id            String         @id @default(uuid())
   name          String
   email         String         @unique
-  role          String         @default("student") // student | organizer | admin | staff
-  status        String         @default("active")
+  role          UserRole       @default(student)
+  status        UserStatus     @default(active)
   joined        DateTime       @default(now())
   registrations Registration[]
 }
 
 // ─── Events ────────────────────────────────────────────────────────────
 model Event {
-  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  id            String         @id @default(uuid())
   title         String
   type          String
   category      String
   description   String
   venue         String
-  date          String
+  
+  // Date Fields
+  date          String         // Keep for legacy/string display if needed
   time          String
-  endDate       String
-  endTime       String
+  startDate     DateTime?      // New native date
+  endDate       DateTime?      // New native date
+  endTime       String?        // Added for seed parity
+  
   capacity      Int
   registered    Int            @default(0)
   checkedIn     Int            @default(0)
-  status        String         @default("upcoming") // upcoming | live | ended
+  status        EventStatus    @default(pending)
   featured      Boolean        @default(false)
   trending      Boolean        @default(false)
   image         String?
   color         String         @default("#6C63FF")
   organizerId   String
   organizerName String
-  tags          String         @default("")
-
+  tags          String[]       @default([]) // Array support in Postgres
+  
+  // Admin Approval
+  approvedById    String?
+  rejectionReason String?
+  submittedAt     DateTime @default(now())
+  approvedAt      DateTime?
+  
   // Relations
   gates         Gate[]
   zones         Zone[]
@@ -55,54 +95,78 @@ model Event {
 
 // ─── Event Details (Relational Documents) ────────────────────────────────
 model Gate {
-  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  id         String @id @default(uuid())
   name       String
   queue      Int    @default(0)
   capacity   Int
   throughput Int    @default(0)
-  eventId    String @db.ObjectId
+  eventId    String
   event      Event  @relation(fields: [eventId], references: [id])
 }
 
 model Zone {
-  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  id         String @id @default(uuid())
   name       String
   capacity   Int
   occupancy  Float  @default(0.0)
   color      String @default("#6C63FF")
-  eventId    String @db.ObjectId
+  eventId    String
   event      Event  @relation(fields: [eventId], references: [id])
 }
 
 model ScheduleItem {
-  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  id      String @id @default(uuid())
   time    String
   title   String
   type    String // logistics | session | workshop | main
-  eventId String @db.ObjectId
+  eventId String
   event   Event  @relation(fields: [eventId], references: [id])
 }
 
 model Speaker {
-  id      String  @id @default(auto()) @map("_id") @db.ObjectId
+  id      String  @id @default(uuid())
   name    String
   role    String
   avatar  String?
-  eventId String  @db.ObjectId
+  eventId String
   event   Event   @relation(fields: [eventId], references: [id])
 }
 
 // ─── Registrations ──────────────────────────────────────────────────────
 model Registration {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  status     String   @default("confirmed") // confirmed | pending | cancelled
-  qrCode     String   @unique
-  passId     String   @unique
-  bookedAt   DateTime @default(now())
+  id          String             @id @default(uuid())
+  status      RegistrationStatus @default(confirmed)
+  qrCode      String             @unique
+  passId      String             @unique
+  bookedAt    DateTime           @default(now())
+  checkedInAt DateTime?          // Track when the user checked in
   
   // Relations
-  userId     String   @db.ObjectId
-  user       User     @relation(fields: [userId], references: [id])
-  eventId    String   @db.ObjectId
-  event      Event    @relation(fields: [eventId], references: [id])
+  userId      String
+  user        User               @relation(fields: [userId], references: [id])
+  eventId     String
+  event       Event              @relation(fields: [eventId], references: [id])
 }
+
+// ─── Administration ───────────────────────────────────────────────────────
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  action        String
+  details       String?
+  performerId   String
+  targetId      String?
+  targetType    String?  // 'user' | 'event' | 'system'
+  timestamp     DateTime @default(now())
+}
+
+model Announcement {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  type      String   @default("info") // info | warning | critical
+  active    Boolean  @default(true)
+  createdBy String
+  createdAt DateTime @default(now())
+}
+

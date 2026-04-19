@@ -13,7 +13,63 @@
   padding: 0 20px 0 16px;
   z-index: 200;
   gap: 16px;
+  transition: top 0.3s;
 }
+
+.broadcastBanner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 36px;
+  background: var(--primary);
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  z-index: 210;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  color: white;
+  font-family: 'Space Grotesk', sans-serif;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.bannerContent {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.bannerIcon {
+  animation: pulse 2s infinite;
+}
+
+.bannerText strong {
+  text-transform: uppercase;
+  background: rgba(0,0,0,0.2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-right: 6px;
+}
+
+.bannerClose {
+  background: none;
+  border: none;
+  color: white;
+  opacity: 0.7;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  display: flex;
+}
+.bannerClose:hover { opacity: 1; }
+
+.scrolled.navbar {
+  /* No change needed, handled by fixed position */
+}
+
 
 .left {
   display: flex;

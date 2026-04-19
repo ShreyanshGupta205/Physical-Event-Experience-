@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PEERS } from '@/data/mockData';
 import { 
@@ -11,12 +11,35 @@ import {
 export default function NetworkingPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sentRequests, setSentRequests] = useState([]);
+  const [aiMatches, setAiMatches] = useState([]);
+  const [isAiLoading, setIsAiLoading] = useState(true);
 
   const filteredPeers = PEERS.filter(p => 
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.interests.some(i => i.toLowerCase().includes(searchQuery.toLowerCase()))
   );
+
+  useEffect(() => {
+    const fetchMatches = async () => {
+      try {
+        const res = await fetch('/api/ai/match', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ studentId: 'current-user', registeredEvents: ['Future Tech Summit', 'AI Workshop'] })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setAiMatches(data);
+        }
+      } catch (e) {
+        console.error("Match fail:", e);
+      } finally {
+        setIsAiLoading(false);
+      }
+    };
+    fetchMatches();
+  }, []);
 
   const toggleRequest = (id) => {
     if (sentRequests.includes(id)) {
@@ -52,6 +75,42 @@ export default function NetworkingPage() {
             <button className="btn btn-ghost btn-icon"><Filter size={18} /></button>
           </div>
         </header>
+
+        {/* AI Recommendations Section */}
+        {!isAiLoading && aiMatches.length > 0 && (
+          <section className="ai-recommendations animate-fadeIn">
+            <div className="section-header">
+              <Sparkles size={18} className="text-secondary" />
+               <h3>Recommended for You</h3>
+            </div>
+            <div className="recommendations-grid">
+               {aiMatches.map((match, i) => {
+                 const peer = PEERS.find(p => p.id === match.peerId);
+                 if (!peer) return null;
+                 return (
+                   <div key={peer.id} className="match-card glass-card animate-fadeInUp" style={{ animationDelay: `${i * 0.1}s` }}>
+                      <div className="match-user">
+                         <div className="match-avatar" style={{ background: `linear-gradient(135deg, ${peer.color}, #000)` }}>
+                            {peer.avatar}
+                         </div>
+                         <div className="match-info">
+                            <strong>{peer.name}</strong>
+                            <span>{peer.role}</span>
+                         </div>
+                      </div>
+                      <div className="match-logic">
+                         <Zap size={12} fill="currentColor" />
+                         <p>{match.matchReason}</p>
+                      </div>
+                      <button className="btn btn-secondary btn-sm" onClick={() => toggleRequest(peer.id)}>
+                         {sentRequests.includes(peer.id) ? 'Request Sent' : 'Fast Connect'}
+                      </button>
+                   </div>
+                 );
+               })}
+            </div>
+          </section>
+        )}
 
         {/* Categories / Intersts */}
         <div className="interest-chips animate-fadeInUp">
@@ -161,6 +220,25 @@ export default function NetworkingPage() {
         }
         .chip:hover { border-color: var(--secondary); color: var(--text); }
         .chip.active { background: var(--secondary); color: black; border-color: var(--secondary); }
+
+        .ai-recommendations { margin-bottom: 3.5rem; }
+        .section-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
+        .section-header h3 { font-size: 0.875rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-faint); }
+        
+        .recommendations-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        .match-card { 
+          padding: 1.5rem !important; display: flex; flex-direction: column; gap: 1.25rem; 
+          border-left: 3px solid var(--secondary); background: linear-gradient(90deg, var(--secondary-glow) 0%, transparent 100%);
+        }
+        .match-user { display: flex; gap: 1rem; align-items: center; }
+        .match-avatar { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 800; color: white; }
+        .match-info { display: flex; flex-direction: column; }
+        .match-info strong { font-size: 1rem; }
+        .match-info span { font-size: 0.7rem; color: var(--text-faint); font-weight: 600; }
+        
+        .match-logic { display: flex; gap: 0.75rem; background: var(--bg-card2); padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border); }
+        .match-logic p { font-size: 0.75rem; color: var(--text-muted); font-style: italic; line-height: 1.4; }
+        .match-logic svg { color: var(--secondary); flex-shrink: 0; }
 
         .peers-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-bottom: 4rem; }
         

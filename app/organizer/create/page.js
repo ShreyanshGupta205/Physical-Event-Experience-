@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useApp } from '@/context/AppContext';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { 
   Zap, Calendar, MapPin, Users, Clock, 
@@ -11,6 +12,7 @@ import {
 
 export default function CreateEventPage() {
   const router = useRouter();
+  const { user } = useApp();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     title: '',
@@ -22,16 +24,70 @@ export default function CreateEventPage() {
     time: '09:00',
     capacity: 100,
     color: '#6C63FF',
+    tags: []
   });
+  const [isMagicLoading, setIsMagicLoading] = useState(false);
+
+  const handleMagicGenerate = async () => {
+    if (!formData.title) return;
+    setIsMagicLoading(true);
+    try {
+      const res = await fetch('/api/ai/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: formData.title })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setFormData(prev => ({
+          ...prev,
+          description: data.description,
+          type: data.type,
+          category: data.category,
+          color: data.color,
+          tags: data.suggestedTags
+        }));
+      }
+    } catch (e) {
+      console.error("Magic fail:", e);
+    } finally {
+      setIsMagicLoading(false);
+    }
+  };
 
   const nextStep = () => setStep(s => Math.min(s + 1, 3));
   const prevStep = () => setStep(s => Math.max(s - 1, 1));
 
-  const handleSubmit = (e) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // In a real app, this would call a context function
-    console.log('Event Deployed:', formData);
-    router.push('/organizer/crowd');
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        ...formData,
+        organizerId: user?.id || 'org-temp',
+        organizerName: user?.name || 'Creator',
+        date: formData.date || new Date().toISOString().slice(0, 10),
+      };
+
+      const res = await fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        router.push('/organizer');
+      } else {
+        const errorData = await res.json();
+        alert('Failed to deploy: ' + (errorData.error || 'Unknown error'));
+      }
+    } catch (err) {
+      alert('Network error during deployment.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -60,8 +116,20 @@ export default function CreateEventPage() {
 
         <form onSubmit={handleSubmit} className="flow-form glass-card animate-fadeInUp">
           {step === 1 && (
-            <div className="form-step animate-fadeIn">
-              <h2 className="step-heading">Core Intelligence</h2>
+            <div className={`form-step animate-fadeIn ${isMagicLoading ? 'magic-syncing' : ''}`}>
+              <div className="step-header-with-magic">
+                <h2 className="step-heading">Core Intelligence</h2>
+                <button 
+                  type="button" 
+                  className={`btn btn-sm magic-btn ${!formData.title ? 'disabled' : ''}`}
+                  onClick={handleMagicGenerate}
+                  disabled={isMagicLoading || !formData.title}
+                >
+                  {isMagicLoading ? <Sparkles className="animate-spin" size={14} /> : <Zap size={14} />} 
+                  <span>{isMagicLoading ? 'AI Manifesting...' : 'Magic Generate'}</span>
+                </button>
+              </div>
+
               <div className="input-group">
                 <label>Event Name</label>
                 <div className="input-wrap">
@@ -110,6 +178,15 @@ export default function CreateEventPage() {
                   required
                 />
               </div>
+
+              {formData.tags?.length > 0 && (
+                <div className="input-group">
+                   <label>System-Suggested Tags</label>
+                   <div className="tags-preview">
+                      {formData.tags.map(tag => <span key={tag} className="s-tag">#{tag}</span>)}
+                   </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -200,8 +277,8 @@ export default function CreateEventPage() {
                   CONTINUE <ChevronRight size={18} />
                 </button>
               ) : (
-                <button type="submit" className="btn btn-primary lg shadow-lg" style={{ background: formData.color }}>
-                  DEPLOY EXPERIENCE <Rocket size={18} />
+                <button type="submit" className="btn btn-primary lg shadow-lg" style={{ background: formData.color }} disabled={isSubmitting}>
+                  {isSubmitting ? 'DEPLOYING...' : 'DEPLOY EXPERIENCE'} <Rocket size={18} />
                 </button>
               )}
             </div>
@@ -211,6 +288,27 @@ export default function CreateEventPage() {
 
       <style jsx>{`
         .creation-flow { max-width: 800px; margin: 0 auto; padding: 1rem 0; }
+        
+        .step-header-with-magic { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; }
+        .magic-btn { 
+          display: flex; align-items: center; gap: 0.6rem; 
+          background: var(--bg-glass); border: 1px solid var(--secondary-glow);
+          color: var(--secondary); font-weight: 800; border-radius: 8px;
+          cursor: pointer; transition: var(--transition);
+        }
+        .magic-btn:hover:not(:disabled) { background: var(--secondary-glow); transform: scale(1.05); }
+        .magic-btn.disabled { opacity: 0.3; cursor: not-allowed; }
+
+        .magic-syncing { position: relative; }
+        .magic-syncing::after { 
+           content: ''; position: absolute; inset: -10px; 
+           border: 2px solid var(--secondary); border-radius: var(--radius-lg); 
+           animation: magic-border 2s infinite; pointer-events: none;
+        }
+        @keyframes magic-border { 0% { opacity: 0; transform: scale(0.98); } 50% { opacity: 0.5; } 100% { opacity: 0; transform: scale(1.02); } }
+
+        .tags-preview { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .s-tag { font-size: 0.7rem; font-weight: 800; color: var(--secondary); background: var(--secondary-glow); padding: 0.2rem 0.6rem; border-radius: 4px; }
         
         .flow-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3.5rem; }
         .discovery-badge {

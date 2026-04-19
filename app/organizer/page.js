@@ -8,17 +8,20 @@ import {
   Share2, PlusCircle, BarChart2, Map, Radio
 } from 'lucide-react';
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
 
 import LiveFeed from '@/components/organizer/LiveFeed';
 import KpiGrid from '@/components/organizer/KpiGrid';
 import ZoneMatrix from '@/components/organizer/ZoneMatrix';
+import AiInsights from '@/components/organizer/AiInsights';
+import SimulationConsole from '@/components/organizer/SimulationConsole';
 
 export default function OrganizerDashboard() {
   const { events, loading } = useApp();
   const event = events[0]; // Default to first event or null
   const [telemetry, setTelemetry] = useState({ registered: 0, checkedIn: 0 });
+  const [simMode, setSimMode] = useState(false);
 
   useEffect(() => {
     if (event) {
@@ -39,7 +42,14 @@ export default function OrganizerDashboard() {
     }
   }, [event?.id]);
 
-  const pct = event ? Math.round((telemetry.registered / event.capacity) * 100) : 0;
+  const handleSimulate = (type) => {
+    console.log(`Triggering Simulation: ${type}`);
+    if (type === 'surge') {
+      setTelemetry(prev => ({ ...prev, checkedIn: prev.checkedIn + 50 }));
+    }
+  };
+
+  const pct = event ? Math.round((telemetry.checkedIn / event.capacity) * 100) : 0;
 
 
   if (loading) {
@@ -89,14 +99,23 @@ export default function OrganizerDashboard() {
           </div>
 
           <div className="mission-actions">
+            <button className={`btn btn-sm ${simMode ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setSimMode(!simMode)}>
+               {simMode ? <Zap size={14} fill="currentColor" /> : <PlusCircle size={14} />} SIM-MODE
+            </button>
+            <div className="divider-v" />
             <button className="btn btn-ghost btn-lg"><Share2 size={18} /> Invite</button>
             <Link href="/organizer/analytics" className="btn btn-ghost btn-lg"><BarChart2 size={18} /> Intel</Link>
-            <Link href="/organizer/create" className="btn btn-primary btn-lg"><PlusCircle size={18} /> Scale Event</Link>
           </div>
         </header>
 
         {/* Global KPIs via Modular Component */}
-        <KpiGrid registeredCount={telemetry.registered} pct={pct} />
+        <KpiGrid registeredCount={telemetry.registered} pct={pct} checkedInCount={telemetry.checkedIn} />
+
+        {/* AI & Simulation Layer - Tactical Row */}
+        <div className="tactical-row animate-fadeIn">
+           <AiInsights eventId={event.id} />
+           {simMode && <SimulationConsole onSimulate={handleSimulate} />}
+        </div>
 
 
         <div className="mission-main-grid">
@@ -116,12 +135,18 @@ export default function OrganizerDashboard() {
                       <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.2} />
                       <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
                     </linearGradient>
+                    <linearGradient id="checkGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--secondary)" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="var(--secondary)" stopOpacity={0} />
+                    </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
                   <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fill: 'var(--text-faint)', fontSize: 11 }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--text-faint)', fontSize: 11 }} />
                   <Tooltip contentStyle={{ background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '12px' }} />
-                  <Area type="monotone" dataKey="count" stroke="var(--primary)" strokeWidth={3} fill="url(#regGrad)" />
+                  <Legend iconType="circle" wrapperStyle={{ paddingTop: '10px', fontSize: '10px', fontWeight: 'bold' }} />
+                  <Area type="monotone" name="Registrations" dataKey="count" stroke="var(--primary)" strokeWidth={3} fill="url(#regGrad)" />
+                  <Area type="monotone" name="Check-ins" dataKey="actual" stroke="var(--secondary)" strokeWidth={3} fill="url(#checkGrad)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -183,7 +208,11 @@ export default function OrganizerDashboard() {
         .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 2s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 100% { opacity: 0.4; transform: scale(1.5); } }
 
-        .mission-actions { display: flex; gap: 1rem; }
+        .mission-actions { display: flex; gap: 1rem; align-items: center; }
+        .divider-v { width: 1px; height: 30px; background: var(--border); }
+
+        .tactical-row { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2.5rem; }
+        @media (max-width: 900px) { .tactical-row { grid-template-columns: 1fr; } }
 
         .mission-main-grid { display: grid; grid-template-columns: 1fr 360px; gap: 2rem; margin-bottom: 2.5rem; }
         .analytics-well { padding: 2rem !important; }

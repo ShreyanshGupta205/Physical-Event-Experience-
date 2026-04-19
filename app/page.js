@@ -79,16 +79,24 @@ export default function SaaSPageV2() {
             <div className={styles.heroActions}>
               {isLoggedIn ? (
                 <Link href={dashboardLink} className="btn btn-primary btn-lg shine">
-                   Go to Dashboard <ArrowRight size={18} />
+                   Go to My Dashboard <ArrowRight size={18} />
                 </Link>
               ) : (
-                <Link href="/auth" className="btn btn-primary btn-lg shine">
-                   Get Started Free <ArrowRight size={18} />
-                </Link>
+                <div className="cta-group">
+                  <div className="cta-column">
+                    <span className="cta-label">Experience as Attendee</span>
+                    <Link href="/auth" className="btn btn-primary btn-lg shine">
+                       Join as Explorer <ArrowRight size={18} />
+                    </Link>
+                  </div>
+                  <div className="cta-column">
+                    <span className="cta-label">Manage as Organizer</span>
+                    <Link href="/auth" className="btn btn-secondary btn-lg">
+                       Partner Access
+                    </Link>
+                  </div>
+                </div>
               )}
-              <Link href="/discover" className="btn btn-secondary btn-lg">
-                <Play size={18} fill="currentColor" /> Watch Demo
-              </Link>
             </div>
           </Reveal>
 
@@ -169,58 +177,6 @@ export default function SaaSPageV2() {
             </Reveal>
         </section>
 
-        {/* FEATURES GRID */}
-        <Section 
-          id="features"
-          tag="Technology" 
-          title="Built for the Next Era" 
-          desc="Eventra isn't a tool; it's an infrastructure for human movement."
-        >
-          <div className={styles.grid}>
-            {[
-              { icon: Zap, title: "Predictive Flow", text: "AI anticipates bottlenecks before they form, redirecting staff automatically." },
-              { icon: Shield, title: "Unified Command", text: "Single source of truth for security, staff, and VIP coordination." },
-              { icon: Map, title: "Spatial Intel", text: "X-ray vision into your venue. Know exactly where your value is concentrated." },
-              { icon: QrCode, title: "Hyper-Scan", text: "Process 50 attendees per minute per gate with biometric-ready scanning." }
-            ].map((f, i) => (
-              <div key={i} className={styles.card}>
-                <div className={styles.cardIcon}><f.icon size={26} /></div>
-                <h3 className={styles.cardTitle}>{f.title}</h3>
-                <p className={styles.cardText}>{f.text}</p>
-              </div>
-            ))}
-          </div>
-        </Section>
-
-        {/* AUDIENCE TABS V2 */}
-        <Section 
-          id="solutions"
-          tag="Ecosystem" 
-          title="Precision for Every Participant" 
-          desc="Select your perspective to see how Eventra re-engineers your experience."
-        >
-          <div className="audience-v2 glass-card">
-             <div className="a-tabs">
-                {["Attendees", "Organizers", "Staff"].map((t, i) => (
-                  <button key={i} className={`a-tab ${activeTab === i ? 'active' : ''}`} onClick={() => setActiveTab(i)}>{t}</button>
-                ))}
-             </div>
-             <div className="a-content animate-fadeIn">
-                {activeTab === 0 && <div className="a-pane">
-                    <h3>Seamless Discovery & Entry</h3>
-                    <p>Register in seconds, receive AI-guided venue coordinates, and enter with a single tap. No more queues, just experiences.</p>
-                </div>}
-                {activeTab === 1 && <div className="a-pane">
-                    <h3>Total Operational Control</h3>
-                    <p>Real-time telemetry, crowd heatmaps, and AI-driven crowd control predictions. Master your venue from any device.</p>
-                </div>}
-                {activeTab === 2 && <div className="a-pane">
-                    <h3>Tactical Field Tools</h3>
-                    <p>Ultra-responsive scanning, real-time incident reporting, and integrated communication for smooth on-ground management.</p>
-                </div>}
-             </div>
-          </div>
-        </Section>
 
         {/* FINAL CTA V2 */}
         <section className="final-cta-v2 container">
@@ -248,6 +204,16 @@ export default function SaaSPageV2() {
         .container { max-width: 1300px; margin: 0 auto; padding: 0 2rem; }
         .live-badge { display: inline-flex; align-items: center; gap: 0.75rem; padding: 0.5rem 1.25rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: var(--radius-full); color: var(--secondary-light); font-size: 0.75rem; font-weight: 700; margin-bottom: 2.5rem; }
         .pulse-dot { width: 8px; height: 8px; background: var(--secondary); border-radius: 50%; display: block; box-shadow: 0 0 10px var(--secondary); }
+
+        .cta-group { display: flex; gap: 2rem; align-items: flex-end; }
+        .cta-column { display: flex; flex-direction: column; gap: 0.75rem; text-align: left; }
+        .cta-label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--text-faint); letter-spacing: 0.1em; margin-left: 0.25rem; }
+        
+        @media (max-width: 768px) {
+          .cta-group { flex-direction: column; align-items: stretch; gap: 1.5rem; }
+          .cta-column { text-align: center; }
+          .cta-label { text-align: center; margin-left: 0; }
+        }
 
         .hero-product-preview-v2 { position: relative; margin-top: 4rem; perspective: 1000px; }
         .mockup-v2 { position: relative; max-width: 1100px; margin: 0 auto; padding: 0.75rem !important; border-radius: 20px; animation: hero-float 6s ease-in-out infinite; }

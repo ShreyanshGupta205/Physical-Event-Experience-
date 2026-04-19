@@ -6,7 +6,8 @@ import { useApp } from '@/context/AppContext';
 import {
   Home, Calendar, LayoutDashboard, Users, Settings,
   QrCode, Bell, BarChart2, PlusCircle, ShieldCheck,
-  Map, Zap, ChevronRight, TrendingUp, UserCheck, Activity, X, Trophy
+  Map, Zap, ChevronRight, TrendingUp, UserCheck, Activity, X, Trophy,
+  Megaphone, History
 } from 'lucide-react';
 import styles from './Sidebar.module.css';
 
@@ -28,9 +29,11 @@ const NAV_CONFIG = {
   ],
   admin: [
     { href: '/', icon: Home, label: 'Home' },
-    { href: '/admin', icon: ShieldCheck, label: 'System Admin' },
+    { href: '/admin', icon: ShieldCheck, label: 'Control Tower' },
     { href: '/admin/users', icon: Users, label: 'User Directory' },
     { href: '/admin/events', icon: Calendar, label: 'Approvals' },
+    { href: '/admin/broadcast', icon: Megaphone, label: 'Broadcast Center' },
+    { href: '/admin/logs', icon: History, label: 'Audit Logs' },
   ],
   staff: [
     { href: '/', icon: Home, label: 'Home' },
@@ -118,6 +121,26 @@ export default function Sidebar({ open, onClose }) {
             <div className={styles.aiContent}>
               <h5>Eventra AI</h5>
               <p style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', textOverflow: 'ellipsis' }}>{prediction}</p>
+            </div>
+          </div>
+          
+          <div className={styles.perspectiveSwitcher}>
+            <span className={styles.switcherLabel}>DEBUG: SWITCH PERSPECTIVE</span>
+            <div className={styles.switcherGrid}>
+              {['student', 'organizer', 'admin', 'staff'].map(r => (
+                <button 
+                  key={r} 
+                  className={`${styles.switchBtn} ${activeRole === r ? styles.activeSwitch : ''}`}
+                  onClick={() => {
+                    setRole(r);
+                    const dest = r === 'student' ? '/student/events' : `/${r}`;
+                    router.push(dest);
+                  }}
+                  title={`Switch to ${r} portal`}
+                >
+                  {r.charAt(0).toUpperCase()}
+                </button>
+              ))}
             </div>
           </div>
           

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { EventSchema } from '@/lib/validations';
 
 // GET /api/events
 export async function GET() {
@@ -23,30 +24,38 @@ export async function GET() {
 // POST /api/events
 export async function POST(request) {
   try {
-    const data = await request.json();
+    const json = await request.json();
     
-    // Validate required fields
-    if (!data.title || !data.type || !data.venue || !data.capacity) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    // Validate request body
+    const validation = EventSchema.safeParse(json);
+    if (!validation.success) {
+      return NextResponse.json({ 
+        error: validation.error.errors[0].message 
+      }, { status: 400 });
     }
+
+    const data = validation.data;
+
+    // Normalize tags to array
+    const tagsArray = Array.isArray(data.tags) 
+      ? data.tags 
+      : data.tags.split(',').map(tag => tag.trim()).filter(Boolean);
 
     const event = await prisma.event.create({
       data: {
         title: data.title,
         type: data.type,
-        category: data.category || 'other',
-        description: data.description || '',
+        category: data.category,
+        description: data.description,
         venue: data.venue,
-        date: data.date || new Date().toISOString().split('T')[0],
-        time: data.time || '10:00',
-        endDate: data.endDate || new Date().toISOString().split('T')[0],
-        endTime: data.endTime || '18:00',
-        capacity: parseInt(data.capacity),
-        status: data.status || 'upcoming',
-        organizerId: data.organizerId || 'org-001',
-        organizerName: data.organizerName || 'Default Organizer',
-        color: data.color || '#6C63FF',
-        tags: data.tags || ''
+        date: data.date,
+        time: data.time,
+        capacity: data.capacity,
+        organizerId: data.organizerId,
+        organizerName: data.organizerName,
+        color: data.color,
+        tags: tagsArray,
+        status: 'pending' // Enforce approval workflow
       }
     });
 

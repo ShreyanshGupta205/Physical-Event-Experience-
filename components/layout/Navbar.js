@@ -17,13 +17,32 @@ const ROLE_CONFIG = {
   staff: { color: '#fbbf24', label: 'Staff', icon: <Map size={16} /> }
 };
 
-export default function Navbar({ onMenuToggle }) {
+export default function Navbar({ onMenuToggle, onBannerStateChange }) {
   const { user, role, setRole, logout } = useApp();
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [broadcasts, setBroadcasts] = useState([]);
+  const [showBanner, setShowBanner] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/admin/broadcast')
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setBroadcasts(data);
+          onBannerStateChange?.(true);
+        }
+      })
+      .catch(() => {});
+  }, [onBannerStateChange]);
+
+  const closeBanner = () => {
+    setShowBanner(false);
+    onBannerStateChange?.(false);
+  };
 
   const config = ROLE_CONFIG[role] || ROLE_CONFIG.student;
 
@@ -37,7 +56,16 @@ export default function Navbar({ onMenuToggle }) {
 
   return (
     <>
-      <header className={`${styles.navbar} ${scrolled ? styles.scrolled : ''}`}>
+      {showBanner && broadcasts.length > 0 && (
+        <div className={styles.broadcastBanner}>
+          <div className={styles.bannerContent}>
+            <Zap size={14} className={styles.bannerIcon} />
+            <span className={styles.bannerText}><strong>{broadcasts[0].title}:</strong> {broadcasts[0].message}</span>
+          </div>
+          <button className={styles.bannerClose} onClick={closeBanner}><X size={14} /></button>
+        </div>
+      )}
+      <header className={`${styles.navbar} ${scrolled ? styles.scrolled : ''}`} style={{ top: 'var(--banner-offset)' }}>
         
         {/* Left: Logo & Menu */}
         <div className={styles.left}>

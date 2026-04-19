@@ -126,9 +126,13 @@ export function AppProvider({ children }) {
 
   const registerForEvent = useCallback(async (event) => {
     try {
+      const token = await auth.currentUser?.getIdToken();
       const res = await fetch('/api/registrations', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ 
           eventId: event.id, 
           userId: user?.id,
@@ -156,9 +160,13 @@ export function AppProvider({ children }) {
 
   const checkInAttendee = useCallback(async (eventId, passId) => {
     try {
+      const token = await auth.currentUser?.getIdToken();
       const res = await fetch('/api/checkin', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+           'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ eventId, passId })
       });
       const data = await res.json();

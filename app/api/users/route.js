@@ -1,14 +1,21 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { UserSyncSchema } from '@/lib/validations';
 
 // POST /api/users - Upsert user from Firebase
 export async function POST(request) {
   try {
-    const data = await request.json();
+    const json = await request.json();
     
-    if (!data.email) {
-      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+    // Validate request body
+    const validation = UserSyncSchema.safeParse(json);
+    if (!validation.success) {
+      return NextResponse.json({ 
+        error: validation.error.errors[0].message 
+      }, { status: 400 });
     }
+
+    const data = validation.data;
 
     // Upsert user based on email (Firebase's primary unique identifier)
     const user = await prisma.user.upsert({
@@ -19,7 +26,7 @@ export async function POST(request) {
       create: {
         name: data.name || 'Eventra Member',
         email: data.email,
-        role: data.role || 'student',
+        role: data.role,
         status: 'active'
       }
     });

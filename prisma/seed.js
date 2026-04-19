@@ -56,7 +56,7 @@ async function main() {
       color: "#6C63FF",
       organizerId: MOCK_IDS.USER_ARJUN,
       organizerName: "TechFest India",
-      tags: "coding, innovation, prizes",
+      tags: ["coding", "innovation", "prizes"],
       gates: {
         create: [
           { name: "Gate A — Main Entry", queue: 28, capacity: 200, throughput: 42 },
@@ -102,8 +102,8 @@ async function main() {
       venue: "Pragati Maidan, New Delhi",
       date: "2026-05-18",
       time: "10:00",
-      endDate: "2026-05-19",
-      endTime: "18:00",
+      startDate: new Date("2026-05-18T10:00:00"),
+      endDate: new Date("2026-05-19T18:00:00"),
       capacity: 2000,
       registered: 1876,
       checkedIn: 1200,
@@ -113,7 +113,7 @@ async function main() {
       color: "#00D4AA",
       organizerId: MOCK_IDS.USER_ARJUN,
       organizerName: "AI India Foundation",
-      tags: "AI, machine learning, conference",
+      tags: ["AI", "machine learning", "conference"],
       gates: {
         create: [
           { name: "Hall 1 — Main",    queue: 45, capacity: 800, throughput: 120 },
@@ -153,8 +153,8 @@ async function main() {
       venue: "DY Patil Stadium, Navi Mumbai",
       date: "2026-05-25",
       time: "19:30",
-      endDate: "2026-05-25",
-      endTime: "23:30",
+      startDate: new Date("2026-05-25T19:30:00"),
+      endDate: new Date("2026-05-25T23:30:00"),
       capacity: 55000,
       registered: 52100,
       checkedIn: 48000,
@@ -164,7 +164,7 @@ async function main() {
       color: "#FF4757",
       organizerId: MOCK_IDS.USER_ARJUN,
       organizerName: "BCCI Events",
-      tags: "cricket, sports, IPL",
+      tags: ["cricket", "sports", "IPL"],
       gates: {
         create: [
           { name: "North Stand Gate", queue: 120, capacity: 15000, throughput: 500 },

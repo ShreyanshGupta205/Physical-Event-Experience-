@@ -15,22 +15,60 @@ export default function StaffPortal() {
   const [status, setStatus] = useState({ type: null, msg: '' });
   const [recentCheckIns, setRecentCheckIns] = useState([]);
   const [scanning, setScanning] = useState(false);
-
-  const activeEvent = events.find(e => e.id === selectedEventId) || events[0];
+  const [isOnline, setIsOnline] = useState(true);
+  const [offlineQueue, setOfflineQueue] = useState([]);
 
   useEffect(() => {
+    // Connectivity Monitor
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    setIsOnline(navigator.onLine);
+
+    // Initial Event selection
     if (!selectedEventId && events.length > 0) {
       setSelectedEventId(events[0].id);
     }
+
+    // Load offline queue from storage
+    const savedQueue = localStorage.getItem('eventra_pending_checkins');
+    if (savedQueue) setOfflineQueue(JSON.parse(savedQueue));
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, [events]);
 
-  const handleCheckIn = (e) => {
+  const saveQueue = (queue) => {
+    setOfflineQueue(queue);
+    localStorage.setItem('eventra_pending_checkins', JSON.stringify(queue));
+  };
+
+  const handleCheckIn = async (e) => {
     if (e) e.preventDefault();
     if (!passId.trim()) return;
 
     setStatus({ type: 'loading', msg: 'Verifying Security Token...' });
+
+    // Handle Offline Case
+    if (!isOnline) {
+      const pendingAction = {
+        id: Date.now(),
+        eventId: selectedEventId,
+        passId,
+        time: new Date().toLocaleTimeString()
+      };
+      saveQueue([...offlineQueue, pendingAction]);
+      setStatus({ type: 'success', msg: 'QUEUED (OFFLINE)' });
+      setPassId('');
+      setTimeout(() => setStatus({ type: null, msg: '' }), 2000);
+      return;
+    }
     
-    setTimeout(async () => {
+    // Online Case
+    try {
       const result = await checkInAttendee(selectedEventId, passId);
       if (result.success) {
         setStatus({ type: 'success', msg: 'ACCESS GRANTED' });
@@ -42,8 +80,41 @@ export default function StaffPortal() {
       } else {
         setStatus({ type: 'error', msg: 'TOKEN REJECTED' });
       }
-      setTimeout(() => setStatus({ type: null, msg: '' }), 3000);
-    }, 1000);
+    } catch (err) {
+      console.error("Check-in error:", err);
+      // Fallback to offline queue if API fails unexpectedly
+      const pendingAction = { id: Date.now(), eventId: selectedEventId, passId, time: new Date().toLocaleTimeString() };
+      saveQueue([...offlineQueue, pendingAction]);
+      setStatus({ type: 'success', msg: 'QUEUED (NETWORK ERROR)' });
+      setPassId('');
+    }
+    
+    setTimeout(() => setStatus({ type: null, msg: '' }), 3000);
+  };
+
+  const syncQueue = async () => {
+    if (offlineQueue.length === 0) return;
+    setStatus({ type: 'loading', msg: `Syncing ${offlineQueue.length} actions...` });
+    
+    let successCount = 0;
+    const remainingQueue = [];
+
+    for (const action of offlineQueue) {
+       try {
+         const res = await checkInAttendee(action.eventId, action.passId);
+         if (res.success) successCount++;
+         else remainingQueue.push(action);
+       } catch (e) {
+         remainingQueue.push(action);
+       }
+    }
+
+    saveQueue(remainingQueue);
+    setStatus({ 
+      type: successCount > 0 ? 'success' : 'error', 
+      msg: successCount > 0 ? `SYNCED ${successCount} ACTIONS` : 'SYNC FAILED' 
+    });
+    setTimeout(() => setStatus({ type: null, msg: '' }), 3000);
   };
 
   const simulateScan = () => {
@@ -55,10 +126,20 @@ export default function StaffPortal() {
     }, 1800);
   };
 
+  const activeEvent = events.find(e => e.id === selectedEventId) || events[0];
+
   return (
     <DashboardLayout>
       <div className="staff-console animate-fadeIn">
         
+        {/* Connectivity Banner */}
+        {!isOnline && (
+          <div className="offline-banner">
+            <AlertTriangle size={16} /> 
+            <span>NETWORK DISCONNECTED - OPERATING IN OFFLINE CACHE MODE</span>
+          </div>
+        )}
+
         {/* Console Header */}
         <header className="console-header">
           <div className="tactical-brand">
@@ -67,9 +148,16 @@ export default function StaffPortal() {
             <p className="HUB-lead">Gate verification and local synchronization active.</p>
           </div>
 
-          <div className="sync-status">
-            <div className="pulse-circle" />
-            <span>SYNCED TO CLOUD</span>
+          <div className="header-status">
+            {offlineQueue.length > 0 && (
+              <button className="sync-btn animate-pulse" onClick={syncQueue} disabled={!isOnline}>
+                <Zap size={14} /> SYNC {offlineQueue.length} PENDING
+              </button>
+            )}
+            <div className={`sync-status ${!isOnline ? 'offline' : ''}`}>
+              <div className="pulse-circle" />
+              <span>{isOnline ? 'SYNCED TO CLOUD' : 'LOCAL CACHE ACTIVE'}</span>
+            </div>
           </div>
         </header>
 
@@ -169,7 +257,24 @@ export default function StaffPortal() {
         }
 
         .sync-status { display: flex; align-items: center; gap: 0.5rem; font-size: 0.7rem; font-weight: 800; color: #4ade80; }
+        .sync-status.offline { color: #f87171; }
         .pulse-circle { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 10px #4ade80; animation: pulse 2s infinite; }
+        .offline .pulse-circle { background: #f87171; box-shadow: 0 0 10px #f87171; }
+
+        .header-status { display: flex; align-items: center; gap: 1.5rem; }
+        .sync-btn { 
+          background: var(--secondary-glow); color: var(--secondary); border: 1px solid var(--secondary);
+          padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.65rem; font-weight: 900;
+          cursor: pointer; display: flex; align-items: center; gap: 0.5rem;
+        }
+        .sync-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .offline-banner { 
+          background: rgba(248, 113, 113, 0.1); border: 1px solid rgba(248, 113, 113, 0.2); 
+          color: #f87171; padding: 0.75rem; border-radius: 8px; margin-bottom: 2rem;
+          display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+          font-size: 0.75rem; font-weight: 800; letter-spacing: 0.05em;
+        }
 
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
 

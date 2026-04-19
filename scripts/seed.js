@@ -2,7 +2,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function seed() {
-  console.log('Seeding demo events...');
+  console.log('Seeding demo events into Supabase...');
 
   const demoEvents = [
     {
@@ -13,7 +13,8 @@ async function seed() {
       venue: 'Pragati Maidan, New Delhi',
       date: '2026-05-15',
       time: '09:00',
-      endDate: '2026-05-17',
+      startDate: new Date('2026-05-15T09:00:00Z'),
+      endDate: new Date('2026-05-17T18:00:00Z'),
       endTime: '18:00',
       capacity: 500,
       status: 'upcoming',
@@ -21,7 +22,7 @@ async function seed() {
       color: '#6366f1',
       organizerId: 'org-001',
       organizerName: 'Tech Council',
-      tags: 'ai,blockchain,dev',
+      tags: ['ai', 'blockchain', 'dev'],
       gates: {
         create: [
           { name: 'Alpha Gate', capacity: 200, queue: 15, throughput: 120 },
@@ -57,7 +58,8 @@ async function seed() {
       venue: 'Convention Centre, Bangalore',
       date: '2026-06-20',
       time: '10:00',
-      endDate: '2026-06-20',
+      startDate: new Date('2026-06-20T10:00:00Z'),
+      endDate: new Date('2026-06-20T20:00:00Z'),
       endTime: '20:00',
       capacity: 1200,
       status: 'upcoming',
@@ -65,7 +67,7 @@ async function seed() {
       color: '#10b981',
       organizerId: 'org-002',
       organizerName: 'Green Earth Found',
-      tags: 'nature,future,energy',
+      tags: ['nature', 'future', 'energy'],
       gates: {
         create: [
           { name: 'Primary Entry', capacity: 600, queue: 10, throughput: 450 },
@@ -93,7 +95,7 @@ async function seed() {
   ];
 
   try {
-    // Clear existing data (optional, but good for a fresh start)
+    // Clear existing data
     await prisma.gate.deleteMany({});
     await prisma.zone.deleteMany({});
     await prisma.scheduleItem.deleteMany({});
@@ -107,7 +109,20 @@ async function seed() {
       });
     }
 
-    console.log('Seeding completed successfully!');
+    // Create Master Admin / Overseer
+    console.log('Provisioning Master Admin account...');
+    await prisma.user.upsert({
+      where: { email: 'admin@eventra.ai' },
+      update: {},
+      create: {
+        name: 'Master Overseer',
+        email: 'admin@eventra.ai',
+        role: 'admin',
+        status: 'active'
+      }
+    });
+
+    console.log('Seeding completed successfully into Supabase!');
   } catch (err) {
     console.error('Error seeding data:', err);
   } finally {
