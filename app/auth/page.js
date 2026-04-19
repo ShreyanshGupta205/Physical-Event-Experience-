@@ -2,7 +2,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
-import { Zap, GraduationCap, LayoutDashboard, ShieldCheck, Users, Eye, EyeOff, ArrowRight, Check, Sparkles } from 'lucide-react';
+import { auth } from '@/lib/firebase';
+import { onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { Zap, GraduationCap, LayoutDashboard, ShieldCheck, Users, Eye, EyeOff, ArrowRight, Check, Sparkles, Activity } from 'lucide-react';
 
 const ROLES = [
   { id: 'student', label: 'Explorer', icon: GraduationCap, color: 'var(--primary)', glow: 'var(--primary-glow)', desc: 'Discover events and secure your digital entry passes.' },
@@ -25,10 +27,67 @@ export default function AuthPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    await new Promise(r => setTimeout(r, 1500));
-    login({ id: 'user-1', name: form.name || 'John Doe', email: form.email }, selectedRole);
-    router.push(selectedRole === 'student' ? '/' : `/${selectedRole}`);
+    try {
+      if (mode === 'register') {
+        const userCredential = await createUserWithEmailAndPassword(auth, form.email, form.password);
+        await updateProfile(userCredential.user, { displayName: form.name });
+        
+        // Sync with MongoDB — onAuthStateChanged will also fire but we do it here
+        // to get the role set immediately before the redirect
+        const syncRes = await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            name: form.name, 
+            email: form.email,
+            role: selectedRole
+          })
+        });
+        
+        const mongoUser = syncRes.ok ? await syncRes.json() : { role: selectedRole };
+        login(mongoUser, mongoUser.role || selectedRole);
+        
+        const destination = mongoUser.role === 'student' ? '/student/events' : `/${mongoUser.role || selectedRole}`;
+        router.push(destination);
+
+      } else {
+        // LOGIN flow
+        await signInWithEmailAndPassword(auth, form.email, form.password);
+        
+        // Fetch MongoDB record for role
+        const fetchRes = await fetch(`/api/users?email=${encodeURIComponent(form.email)}`);
+        
+        let destination = '/';
+        if (fetchRes.ok) {
+          const mongoUser = await fetchRes.json();
+          login(mongoUser, mongoUser.role || 'student');
+          destination = mongoUser.role === 'student' ? '/student/events' : `/${mongoUser.role}`;
+        } else {
+          // DB unavailable — still allow login based on Firebase, use selected role
+          login({ email: form.email }, selectedRole);
+          destination = selectedRole === 'student' ? '/student/events' : `/${selectedRole}`;
+        }
+        
+        router.push(destination);
+      }
+    } catch (error) {
+      console.error("Auth Error:", error);
+      let message = error.message;
+      if (error.code === 'auth/invalid-credential') {
+        message = "Incorrect email or password. If you haven't registered yet, please use the 'Join' tab.";
+      } else if (error.code === 'auth/email-already-in-use') {
+        message = "This email is already registered. Please go to the 'Login' tab.";
+      } else if (error.code === 'auth/weak-password') {
+        message = "Password should be at least 6 characters.";
+      } else if (error.code === 'auth/invalid-email') {
+        message = "Please enter a valid email address.";
+      }
+      alert(message);
+    } finally {
+      setLoading(false);
+    }
   };
+
 
   return (
     <div className="auth-viewport animate-fadeIn">
@@ -41,7 +100,7 @@ export default function AuthPage() {
               <div className="logo-box">
                 <Zap fill="white" size={24} />
               </div>
-              <span className="logo-text">EventSphere</span>
+              <span className="logo-text">Eventra</span>
             </div>
             
             <div className="brand-message">
@@ -132,7 +191,7 @@ export default function AuthPage() {
             </form>
 
             <footer className="form-footer">
-               <p>Powered by EventSphere Security Protocol v2.4</p>
+               <p>Powered by Eventra Security Protocol v2.4</p>
             </footer>
           </div>
         </section>

@@ -1,9 +1,11 @@
 'use client';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { PLATFORM_STATS, USERS, PENDING_EVENTS, EVENTS } from '@/data/mockData';
 import { Users, Calendar, CheckCircle, TrendingUp, ShieldCheck, AlertTriangle, Activity, BarChart2, Star, Zap, Globe, ArrowUpRight } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+
+
 
 const MONTHLY = [
   { month: 'Nov', users: 820, events: 5 },
@@ -15,11 +17,43 @@ const MONTHLY = [
 ];
 
 export default function AdminPanel() {
-  const stats = PLATFORM_STATS;
+  const [data, setData] = useState({ stats: null, users: [], pendingEvents: [] });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/admin/stats');
+        if (res.ok) {
+          const json = await res.json();
+          setData(json);
+        }
+      } catch (err) {
+        console.error("Failed to load admin stats");
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadStats();
+  }, []);
+
+  if (loading || !data.stats) {
+    return (
+      <DashboardLayout>
+         <div className="telemetry-loading animate-pulse" style={{ height: '70vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', color: 'var(--text-faint)' }}>
+           <Activity className="animate-spin" size={32} />
+           <p>AGGREGATING GLOBAL METRICS...</p>
+         </div>
+      </DashboardLayout>
+    );
+  }
+
+  const { stats, users, pendingEvents } = data;
 
   return (
     <DashboardLayout>
       <div className="platform-control-tower animate-fadeIn">
+
         
         {/* Header */}
         <header className="tower-header">
@@ -95,19 +129,25 @@ export default function AdminPanel() {
             <div className="glass-card queue-brick animate-fadeInUp">
                <div className="brick-header">
                  <h3>Registry Appeals</h3>
-                 <span className="count-badge">{PENDING_EVENTS.length}</span>
+                 <span className="count-badge">{pendingEvents.length}</span>
                </div>
+
                <div className="queue-list">
-                 {PENDING_EVENTS.slice(0, 3).map(e => (
-                   <div key={e.id} className="queue-item">
-                     <div className="q-info">
-                       <strong>{e.title}</strong>
-                       <span>by {e.organizer}</span>
+                 {pendingEvents.length === 0 ? (
+                   <div style={{ color: 'var(--text-faint)', fontSize: '0.8rem', textAlign: 'center', padding: '1rem 0' }}>No pending appeals.</div>
+                 ) : (
+                   pendingEvents.slice(0, 3).map(e => (
+                     <div key={e.id} className="queue-item">
+                       <div className="q-info">
+                         <strong>{e.title}</strong>
+                         <span>by {e.organizerName}</span>
+                       </div>
+                       <Link href="/admin/events" className="q-act"><ArrowUpRight size={14} /></Link>
                      </div>
-                     <Link href="/admin/events" className="q-act"><ArrowUpRight size={14} /></Link>
-                   </div>
-                 ))}
+                   ))
+                 )}
                </div>
+
                <Link href="/admin/events" className="btn btn-ghost btn-sm full-btn" style={{ marginTop: '1rem' }}>Review Protocol</Link>
             </div>
           </aside>
@@ -131,18 +171,22 @@ export default function AdminPanel() {
                  </tr>
                </thead>
                <tbody>
-                  {USERS.slice(0, 5).map(u => (
-                    <tr key={u.id}>
-                      <td>
-                        <div className="ident-cell">
-                          <div className="ident-avatar">{u.name.charAt(0)}</div>
-                          <div className="ident-meta">
-                            <strong>{u.name}</strong>
-                            <span>{u.email}</span>
+                  {users.length === 0 ? (
+                    <tr><td colSpan="5" style={{ textAlign: 'center', color: 'var(--text-faint)' }}>No user records found.</td></tr>
+                  ) : (
+                    users.map(u => (
+                      <tr key={u.id}>
+                        <td>
+                          <div className="ident-cell">
+                            <div className="ident-avatar">{u.name.charAt(0)}</div>
+                            <div className="ident-meta">
+                              <strong>{u.name}</strong>
+                              <span>{u.email}</span>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td><span className="role-tag">{u.role}</span></td>
+                        </td>
+                        <td><span className="role-tag">{u.role}</span></td>
+
                       <td>
                          <div className={`status-indicator ${u.status === 'active' ? 'online' : 'offline'}`}>
                            <span className="dot" /> {u.status.toUpperCase()}
@@ -151,8 +195,10 @@ export default function AdminPanel() {
                       <td>{u.registrations} Events</td>
                       <td><button className="btn btn-ghost btn-sm">Revoke</button></td>
                     </tr>
-                  ))}
-                </tbody>
+                  ))
+                )}
+              </tbody>
+
              </table>
           </div>
         </section>

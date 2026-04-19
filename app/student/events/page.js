@@ -18,9 +18,11 @@ export default function MyEventsPage() {
 
   const filtered = registrations.filter(r => {
     const matchStatus = filter === 'all' || r.status === filter;
-    const matchSearch = r.eventTitle.toLowerCase().includes(search.toLowerCase());
+    const title = r.event?.title || r.eventTitle || '';
+    const matchSearch = title.toLowerCase().includes(search.toLowerCase());
     return matchStatus && matchSearch;
   });
+
 
   return (
     <DashboardLayout>
@@ -28,11 +30,12 @@ export default function MyEventsPage() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
           <div>
             <h1 style={{ fontSize: 26, marginBottom: 4 }}>My Registrations</h1>
-            <p style={{ color: 'var(--text-muted)' }}>{registrations.length} events registered</p>
+            <p style={{ color: 'var(--text-muted)' }}>{registrations.length} event{registrations.length !== 1 ? 's' : ''} registered</p>
           </div>
-          <Link href="/" className="btn btn-primary">
+          <Link href="/discover" className="btn btn-primary">
             <Zap size={15} /> Discover More
           </Link>
+
         </div>
 
         {/* Filters */}
@@ -74,19 +77,20 @@ export default function MyEventsPage() {
               </thead>
               <tbody>
                 {filtered.map(r => {
+                  const ev = r.event || {};
                   const sc = STATUS_CONFIG[r.status] || STATUS_CONFIG.confirmed;
                   return (
                     <tr key={r.id}>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <div style={{ width: 4, height: 36, borderRadius: 2, background: r.color, flexShrink: 0 }} />
-                          <span style={{ fontWeight: 600, fontSize: 14 }}>{r.eventTitle}</span>
+                          <div style={{ width: 4, height: 36, borderRadius: 2, background: ev.color || 'var(--primary)', flexShrink: 0 }} />
+                          <span style={{ fontWeight: 600, fontSize: 14 }}>{ev.title || 'Unknown Event'}</span>
                         </div>
                       </td>
-                      <td><span className="badge" style={{ background: `${r.color}20`, color: r.color, border: `1px solid ${r.color}40` }}>{r.type}</span></td>
-                      <td style={{ fontSize: 13, color: 'var(--text-muted)' }}>{new Date(r.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                      <td><span className="badge" style={{ background: `${ev.color || 'var(--primary)'}20`, color: ev.color || 'var(--primary)', border: `1px solid ${ev.color || 'var(--primary)'}40` }}>{ev.type || '—'}</span></td>
+                      <td style={{ fontSize: 13, color: 'var(--text-muted)' }}>{ev.date ? new Date(ev.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</td>
                       <td style={{ fontSize: 13, color: 'var(--text-muted)', maxWidth: 180 }}>
-                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>{r.venue}</span>
+                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>{ev.venue || '—'}</span>
                       </td>
                       <td><span className={`badge ${sc.badgeClass}`}>{sc.label}</span></td>
                       <td>
@@ -104,6 +108,7 @@ export default function MyEventsPage() {
                     </tr>
                   );
                 })}
+
               </tbody>
             </table>
           </div>

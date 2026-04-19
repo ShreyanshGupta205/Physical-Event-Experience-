@@ -58,7 +58,7 @@ export default function EntryPassPage() {
              </button>
              <div className="page-dots">
                {confirmedRegs.map((_, i) => (
-                 <div key={i} className={`dot ${i === activeIdx ? 'active' : ''}`} style={{ '--color': active.color }} />
+                 <div key={i} className={`dot ${i === activeIdx ? 'active' : ''}`} style={{ '--color': active.event?.color || '#6C63FF' }} />
                ))}
              </div>
              <button 
@@ -74,26 +74,26 @@ export default function EntryPassPage() {
         <div className="hub-grid">
           {/* Futuristic Passport */}
           <section className="passport-container animate-scaleUp">
-            <div className="digital-passport glass-card" style={{ '--accent': active.color }}>
+            <div className="digital-passport glass-card" style={{ '--accent': active.event?.color || '#6C63FF' }}>
               <div className="passport-head">
                  <div className="p-brand">
                     <Zap size={18} />
-                    <span>EVENTSPHERE</span>
+                    <span>EVENTRA</span>
                  </div>
-                 <div className="p-tier">{active.type.toUpperCase()} ACCESS</div>
+                 <div className="p-tier">{(active.event?.type || 'EVENT').toUpperCase()} ACCESS</div>
               </div>
 
               <div className="passport-body">
-                <h2 className="p-event-title">{active.eventTitle}</h2>
+                <h2 className="p-event-title">{active.event?.title || 'Unknown Event'}</h2>
                 
                 <div className="p-telem-grid">
                   <div className="p-telem">
                     <label>COORDINATES</label>
-                    <span>{active.venue}</span>
+                    <span>{active.event?.venue || 'Unknown'}</span>
                   </div>
                   <div className="p-telem">
                     <label>TIMESTAMP</label>
-                    <span>{new Date(active.date).toLocaleDateString()} • {active.time || '09:00 AM'}</span>
+                    <span>{active.event?.date ? new Date(active.event.date).toLocaleDateString() : ''} • {active.event?.time || '09:00 AM'}</span>
                   </div>
                   <div className="p-telem">
                     <label>PASSENGER</label>
@@ -111,11 +111,11 @@ export default function EntryPassPage() {
                 </div>
 
                 <div className="p-qr-bay">
-                   <div className="qr-optics" style={{ background: active.color + '11', borderColor: active.color + '33' }}>
+                   <div className="qr-optics" style={{ background: (active.event?.color || '#6C63FF') + '11', borderColor: (active.event?.color || '#6C63FF') + '33' }}>
                       <QRCodeSVG
                         value={active.qrCode}
                         size={180}
-                        fgColor={active.color}
+                        fgColor={active.event?.color || '#6C63FF'}
                         bgColor="transparent"
                         level="H"
                       />
@@ -161,9 +161,9 @@ export default function EntryPassPage() {
                 <div className="vault-stack">
                   {confirmedRegs.map((r, i) => (
                     <button key={r.id} onClick={() => setActiveIdx(i)} className={`vault-item ${i === activeIdx ? 'active' : ''}`}>
-                      <div className="v-dot" style={{ background: r.color }} />
+                      <div className="v-dot" style={{ background: r.event?.color || '#6C63FF' }} />
                       <div className="v-info">
-                        <strong>{r.eventTitle}</strong>
+                        <strong>{r.event?.title || 'Event'}</strong>
                         <span>ID: {r.passId}</span>
                       </div>
                       <CheckCircle size={14} className="v-check" />

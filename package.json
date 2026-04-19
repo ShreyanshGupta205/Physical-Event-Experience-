@@ -3,17 +3,24 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "predev": "netstat -ano | find \":3000\" > nul && (for /f \"tokens=5\" %a in ('netstat -aon ^| findstr :3000') do if not %%a==0 taskkill /f /pid %%a) || (exit /b 0)",
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "db:seed": "node prisma/seed.js",
+    "db:generate": "prisma generate"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@prisma/client": "^6.19.3",
+    "firebase": "^12.12.0",
     "lucide-react": "^0.417.0",
     "next": "^16.2.4",
     "qrcode.react": "^3.1.0",
     "react": "^18",
     "react-dom": "^18",
     "recharts": "^2.12.7"
+  },
+  "devDependencies": {
+    "prisma": "^6.19.3"
   }
 }

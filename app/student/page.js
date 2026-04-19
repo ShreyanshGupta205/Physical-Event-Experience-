@@ -39,7 +39,7 @@ export default function StudentDashboard() {
         {/* Header Section */}
         <section className="hub-header stagger">
           <div className="welcome-box">
-            <h1 className="Hub-heading">Welcome back, <span className="gradient-text">{user.name.split(' ')[0]}</span> 👋</h1>
+            <h1 className="Hub-heading">Welcome back, <span className="gradient-text">{user?.name?.split(' ')[0] || 'Member'}</span> 👋</h1>
             <p className="HUB-lead">Your personalized experience portal is ready.</p>
           </div>
           <Link href="/" className="btn btn-primary btn-lg">

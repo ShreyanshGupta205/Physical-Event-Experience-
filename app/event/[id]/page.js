@@ -22,9 +22,9 @@ const SCHEDULE_ICONS = {
 export default function EventDetailPage() {
   const { id } = useParams();
   const router = useRouter();
-  const { registrations, registerForEvent } = useApp();
+  const { registrations, registerForEvent, events, loading } = useApp();
 
-  const event = EVENTS.find(e => e.id === id);
+  const event = events.find(e => e.id === id);
   const [showModal, setShowModal] = useState(false);
   const [successModal, setSuccessModal] = useState(null);
   const [registered, setRegistered] = useState(false);
@@ -33,7 +33,24 @@ export default function EventDetailPage() {
   const pct = event ? Math.round((event.registered / event.capacity) * 100) : 0;
   const remaining = event ? event.capacity - event.registered : 0;
 
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="loading-state">
+           <div className="spinner" />
+           <p>Retrieving mission-critical data...</p>
+        </div>
+        <style jsx>{`
+          .loading-state { height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; }
+          .spinner { width: 30px; height: 30px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+          @keyframes spin { to { transform: rotate(360deg); } }
+        `}</style>
+      </DashboardLayout>
+    );
+  }
+
   if (!event) {
+
     return (
       <DashboardLayout>
         <div className="error-state animate-fadeIn">

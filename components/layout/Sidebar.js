@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import {
   Home, Calendar, LayoutDashboard, Users, Settings,
@@ -46,10 +47,36 @@ const ROLE_COLORS = {
 };
 
 export default function Sidebar({ open, onClose }) {
-  const { role } = useApp();
+  const { role: contextRole, events, setRole } = useApp();
   const pathname = usePathname();
-  const navItems = NAV_CONFIG[role] || NAV_CONFIG.student;
-  const config = ROLE_COLORS[role] || ROLE_COLORS.student;
+  const [prediction, setPrediction] = useState('Analyzing telemetry...');
+
+  // Derive role from path for visual consistency
+  let activeRole = contextRole;
+  if (pathname.startsWith('/organizer')) activeRole = 'organizer';
+  else if (pathname.startsWith('/admin')) activeRole = 'admin';
+  else if (pathname.startsWith('/staff')) activeRole = 'staff';
+  else if (pathname.startsWith('/student')) activeRole = 'student';
+
+  useEffect(() => {
+    if (activeRole !== contextRole) {
+      setRole(activeRole);
+    }
+  }, [activeRole, contextRole, setRole]);
+
+  useEffect(() => {
+    if (events && events.length > 0 && activeRole === 'organizer') {
+      fetch(`/api/ai/predict?eventId=${events[0].id}`)
+        .then(res => res.json())
+        .then(data => setPrediction(data.suggestion || 'System nominal.'))
+        .catch(() => setPrediction('Telemetry disconnected.'));
+    } else if (activeRole !== 'organizer') {
+      setPrediction('AI securely monitoring bounds.');
+    }
+  }, [events, activeRole]);
+
+  const navItems = NAV_CONFIG[activeRole] || NAV_CONFIG.student;
+  const config = ROLE_COLORS[activeRole] || ROLE_COLORS.student;
 
   return (
     <>
@@ -89,8 +116,8 @@ export default function Sidebar({ open, onClose }) {
               <Zap size={14} fill="currentColor" />
             </div>
             <div className={styles.aiContent}>
-              <h5>EventSphere AI</h5>
-              <p>Predicting crowd flows...</p>
+              <h5>Eventra AI</h5>
+              <p style={{ display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', textOverflow: 'ellipsis' }}>{prediction}</p>
             </div>
           </div>
           

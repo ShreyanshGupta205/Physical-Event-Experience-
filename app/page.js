@@ -1,427 +1,294 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import DashboardLayout from '@/components/layout/DashboardLayout';
-import { useApp } from '@/context/AppContext';
-import { CATEGORY_OPTIONS, TYPE_OPTIONS } from '@/data/mockData';
-import {
-  Search, Filter, Calendar, MapPin, Users, Clock,
-  TrendingUp, Star, Zap, ArrowRight, ChevronRight,
-  Play, Activity, Sparkles
+import { LandingNavbar, LandingFooter } from '@/components/landing/LandingLayout';
+import Counter from '@/components/ui/Counter';
+import Reveal from '@/components/ui/Reveal';
+import { 
+  ArrowRight, Zap, Shield, Users, Map, 
+  Search, CheckCircle, BarChart3, QrCode, 
+  Activity, AlertTriangle, Layers, Smartphone, Clock, Play
 } from 'lucide-react';
+import styles from '@/components/landing/Landing.module.css';
+import { useApp } from '@/context/AppContext';
 
-function EventCard({ event, onRegister, isRegistered }) {
-  const pct = Math.round((event.registered / event.capacity) * 100);
-  const remaining = event.capacity - event.registered;
-  const isAlmostFull = pct >= 85;
+
+// Enhanced Section Component with Reveal
+const Section = ({ id, tag, title, desc, children, delay = 0 }) => (
+  <section id={id} className={styles.section}>
+    <Reveal delay={delay}>
+      <div className={styles.sectionHeader}>
+        {tag && <span className={styles.sectionTag}>{tag}</span>}
+        <h2 className={styles.sectionTitle}>{title}</h2>
+        <p className={styles.sectionDesc}>{desc}</p>
+      </div>
+    </Reveal>
+    <Reveal delay={delay + 0.2}>
+      {children}
+    </Reveal>
+  </section>
+);
+
+export default function SaaSPageV2() {
+  const { isLoggedIn, role } = useApp();
+  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+  const [activeTab, setActiveTab] = useState(0);
+
+  const dashboardLink = role === 'student' ? '/student/events' : `/${role}`;
+
+
+  const handleMouseMove = (e) => {
+    const { clientX, clientY } = e;
+    const { innerWidth, innerHeight } = window;
+    setMousePos({
+      x: (clientX / innerWidth) * 100,
+      y: (clientY / innerHeight) * 100
+    });
+  };
 
   return (
-    <div className="glass-card stagger-item event-card-wrapper">
-      <div className="event-banner" style={{ background: `linear-gradient(135deg, ${event.color}66, rgba(13,15,28,0.4)), radial-gradient(circle at top right, ${event.color}55, transparent)` }}>
-        <div className="badge-group">
-          <span className="badge badge-secondary">{event.type}</span>
-          {event.trending && <span className="badge badge-accent"><TrendingUp size={10} /> Hot</span>}
-        </div>
-      </div>
+    <div className="landing-bg" onMouseMove={handleMouseMove} style={{ '--mouse-x': `${mousePos.x}%`, '--mouse-y': `${mousePos.y}%` }}>
+      <LandingNavbar />
 
-      <div className="event-content">
-        <h3 className="event-title">{event.title}</h3>
-        <p className="event-desc">{event.description}</p>
+      <main>
+        {/* HERO SECTION 2.0 */}
+        <section className={styles.hero}>
+          <div className={styles.heroGlow} />
+          
+          <Reveal>
+             <div className="live-badge animate-pulse">
+                <span className="pulse-dot" />
+                System Live: Managing 42,000+ Real-time Coordinates
+             </div>
+          </Reveal>
 
-        <div className="event-meta-grid">
-          <div className="meta-item"><Calendar size={14} /> <span>{new Date(event.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span></div>
-          <div className="meta-item"><Clock size={14} /> <span>{event.time}</span></div>
-          <div className="meta-item"><MapPin size={14} /> <span className="truncate">{event.venue.split(',')[0]}</span></div>
-        </div>
-
-        <div className="capacity-section">
-          <div className="capacity-meta">
-            <span>{event.registered.toLocaleString()} joined</span>
-            <span className={isAlmostFull ? 'text-accent' : 'text-primary'}>{remaining.toLocaleString()} left</span>
-          </div>
-          <div className="progress-bar">
-            <div className="progress-fill" style={{ width: `${pct}%`, background: event.color }} />
-          </div>
-        </div>
-
-        <div className="card-actions">
-          <Link href={`/event/${event.id}`} className="btn btn-ghost btn-sm">Details</Link>
-          {isRegistered ? (
-            <Link href="/student/pass" className="btn btn-secondary btn-sm">Pass Attached</Link>
-          ) : (
-            <button 
-              className="btn btn-primary btn-sm" 
-              onClick={() => onRegister(event)}
-              disabled={remaining === 0}
-            >
-              {remaining === 0 ? 'Closed' : 'Secure Spot'}
-            </button>
-          )}
-        </div>
-      </div>
-
-      <style jsx>{`
-        .event-card-wrapper {
-          display: flex; flex-direction: column; height: 100%;
-        }
-        .event-banner {
-          height: 140px;
-          margin: -1.5rem -1.5rem 1.5rem;
-          padding: 1rem;
-          display: flex;
-          align-items: flex-start;
-          background-size: 200% 200% !important;
-          animation: pan-gradient 10s ease infinite alternate;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        @keyframes pan-gradient {
-          0% { background-position: 0% 50%; }
-          100% { background-position: 100% 50%; }
-        }
-        .badge-group { display: flex; gap: 0.5rem; }
-        .event-title { margin-bottom: 0.5rem; font-size: 1.125rem; }
-        .event-desc { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.5; height: 2.6rem; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-        .event-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.5rem; }
-        .meta-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-faint); }
-        .capacity-section { margin-bottom: 1.5rem; }
-        .capacity-meta { display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.5rem; font-weight: 600; }
-        .card-actions { display: flex; gap: 0.75rem; justify-content: space-between; }
-        .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80px; }
-        .text-accent { color: var(--accent); }
-        .text-primary { color: var(--primary-light); }
-      `}</style>
-    </div>
-  );
-}
-
-export default function HomePage() {
-  const { events, registrations, registerForEvent } = useApp();
-  const [search, setSearch] = useState('');
-  const [activeCategory, setActiveCategory] = useState('All');
-  const [activeType, setActiveType] = useState('All Types');
-  const [sortBy, setSortBy] = useState('trending');
-  const [registerModal, setRegisterModal] = useState(null);
-  const [successModal, setSuccessModal] = useState(null);
-  const [liveCount, setLiveCount] = useState(42810);
-
-  useEffect(() => {
-    const t = setInterval(() => setLiveCount(c => c + Math.floor(Math.random() * 3)), 3000);
-    return () => clearInterval(t);
-  }, []);
-
-  const registeredIds = registrations.map(r => r.eventId);
-
-  const filtered = events.filter(e => {
-    const matchSearch = e.title.toLowerCase().includes(search.toLowerCase()) || e.venue.toLowerCase().includes(search.toLowerCase());
-    const matchCat = activeCategory === 'All' || e.category === activeCategory.toLowerCase();
-    const matchType = activeType === 'All Types' || e.type === activeType;
-    return matchSearch && matchCat && matchType;
-  });
-
-  return (
-    <DashboardLayout>
-      <div className="landing-container">
-        {/* Cinematic Hero */}
-        <section className="hero-section animate-fadeIn">
-          <div className="hero-glow" />
-          <div className="hero-content-box">
-            <div className="live-indicator-pill">
-              <span className="status-dot live" />
-              <span>{liveCount.toLocaleString()} Explorers Online</span>
-            </div>
-            <h1 className="hero-heading animate-fadeInUp">
-              The Next Frontier of<br />
-              <span className="gradient-text">Physical Experiences</span>
+          <Reveal delay={0.1}>
+            <h1 className={styles.heroTitle}>
+              Smarter Events.<br />
+              <span className="gradient-text">Seamless Experiences.</span>
             </h1>
-            <p className="hero-lead animate-fadeInUp" style={{ animationDelay: '0.1s' }}>
-              Seamless entry, real-time crowd intelligence, and exclusive access to the most anticipated events across the sphere.
+          </Reveal>
+
+          <Reveal delay={0.2}>
+            <p className={styles.heroSub}>
+              Eventra is the world's most advanced AI-orchestration layer for physical events. Reduce friction, eliminate queues, and unlock absolute coordination.
             </p>
-            
-            <div className="hero-action-row animate-fadeInUp" style={{ animationDelay: '0.2s' }}>
-              <div className="premium-search">
-                <Search className="search-icon" size={20} />
-                <input 
-                  type="text" 
-                  placeholder="What are you looking for?" 
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-              <button className="btn btn-primary btn-lg">Explore Now</button>
-            </div>
+          </Reveal>
 
-            <div className="hero-metrics animate-fadeInUp" style={{ animationDelay: '0.3s' }}>
-              <div className="metric"><strong>120+</strong><span>Daily Events</span></div>
-              <div className="metric-sep" />
-              <div className="metric"><strong>1.2M</strong><span>Tickets Issued</span></div>
-              <div className="metric-sep" />
-              <div className="metric"><strong>99.9%</strong><span>Entry Success</span></div>
-            </div>
-          </div>
-        </section>
-
-        {/* Categories & Filter Bar */}
-        <section className="filter-section stagger">
-          <div className="section-header">
-            <h2 className="section-title">Experience Categories</h2>
-            <div className="header-actions">
-              <select className="input minimal" value={sortBy} onChange={e => setSortBy(e.target.value)}>
-                <option value="trending">Trending Now</option>
-                <option value="date">Upcoming Soon</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="category-scroll">
-            {CATEGORY_OPTIONS.map(cat => (
-              <button 
-                key={cat} 
-                className={`category-chip ${activeCategory === cat ? 'active' : ''}`}
-                onClick={() => setActiveCategory(cat)}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-        </section>
-
-        {/* Live Events Grid */}
-        <section className="events-section">
-          <div className="grid-auto stagger">
-            {filtered.map(event => (
-              <EventCard 
-                key={event.id} 
-                event={event} 
-                onRegister={setRegisterModal}
-                isRegistered={registeredIds.includes(event.id)}
-              />
-            ))}
-          </div>
-        </section>
-      </div>
-
-      {/* Modern Modals */}
-      {registerModal && (
-        <div className="modal-overlay" onClick={() => setRegisterModal(null)}>
-          <div className="glass-card modal animate-fadeInUp" onClick={e => e.stopPropagation()}>
-            <div className="modal-icon-wrap" style={{ color: registerModal.color }}>
-              <Sparkles size={32} />
-            </div>
-            <h2 className="modal-title">Confirm Attendance</h2>
-            <p className="modal-desc">Secure your spot at <strong>{registerModal.title}</strong>. Your digital pass will be generated instantly.</p>
-            
-            <div className="modal-actions">
-              <button className="btn btn-ghost" onClick={() => setRegisterModal(null)}>Maybe Later</button>
-              <button 
-                className="btn btn-primary" 
-                onClick={() => {
-                  const reg = registerForEvent(registerModal);
-                  setRegisterModal(null);
-                  setSuccessModal(reg);
-                }}
-              >
-                Confirm Spot
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {successModal && (
-        <div className="modal-overlay" onClick={() => setSuccessModal(null)}>
-          <div className="glass-card modal text-center animate-fadeInUp" onClick={e => e.stopPropagation()}>
-            <div className="success-icon animate-float">
-              <Zap size={32} />
-            </div>
-            <h2 className="modal-title">Great Choice! 🎉</h2>
-            <p className="modal-desc">Registration confirmed for {successModal.eventTitle}.</p>
-            <div className="pass-pill">Pass ID: {successModal.passId}</div>
-            
-            <div className="modal-actions full">
-              <Link href="/student/pass" className="btn btn-primary w-full" onClick={() => setSuccessModal(null)}>
-                View Digital Pass <ArrowRight size={16} />
+          <Reveal delay={0.3}>
+            <div className={styles.heroActions}>
+              {isLoggedIn ? (
+                <Link href={dashboardLink} className="btn btn-primary btn-lg shine">
+                   Go to Dashboard <ArrowRight size={18} />
+                </Link>
+              ) : (
+                <Link href="/auth" className="btn btn-primary btn-lg shine">
+                   Get Started Free <ArrowRight size={18} />
+                </Link>
+              )}
+              <Link href="/discover" className="btn btn-secondary btn-lg">
+                <Play size={18} fill="currentColor" /> Watch Demo
               </Link>
             </div>
+          </Reveal>
+
+
+          <Reveal delay={0.5}>
+            <div className="hero-product-preview-v2">
+              <div className="mockup-v2 glass-card">
+                 <img 
+                   src="/eventra_dashboard_mockup_1776458173220.png" 
+                   alt="Eventra Global Dashboard" 
+                   className="mockup-img-v2"
+                   onError={(e) => {
+                     e.target.src = "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2070";
+                   }}
+                 />
+                 <div className="preview-overlay" />
+                 
+                 {/* Floating Interactive Elements */}
+                 <div className="floating-card c-1 blur-glass">
+                    <Activity size={14} color="#10b981" />
+                    <div>
+                       <small>Current Flow</small>
+                       <strong>Normal</strong>
+                    </div>
+                 </div>
+                 <div className="floating-card c-2 blur-glass">
+                    <Users size={14} color="#6366f1" />
+                    <div>
+                       <small>Total Density</small>
+                       <strong>84%</strong>
+                    </div>
+                 </div>
+              </div>
+            </div>
+          </Reveal>
+        </section>
+
+        {/* PROBLEM SECTION */}
+        <Section 
+          tag="The Conflict" 
+          title="Events are breaking at scale" 
+          desc="Legacy systems can't handle the physics of modern crowds. Friction isn't just annoying—it's expensive."
+        >
+          <div className={styles.grid}>
+            {[
+              { icon: AlertTriangle, title: "Crowd Friction", text: "Linear growth in attendees leads to exponential growth in chaos." },
+              { icon: Clock, title: "Dead Time", text: "Attendees spend 30% of their event experience waiting in queues." },
+              { icon: BarChart3, title: "Operational Dark", text: "Most organizers have zero visibility into venue health until it's too late." }
+            ].map((p, i) => (
+              <div key={i} className={styles.card}>
+                <div className={styles.cardIcon}><p.icon size={28} /></div>
+                <h3 className={styles.cardTitle}>{p.title}</h3>
+                <p className={styles.cardText}>{p.text}</p>
+              </div>
+            ))}
           </div>
-        </div>
-      )}
+        </Section>
+
+        {/* STATS STRIP V2 */}
+        <section className="stats-v2 container">
+            <Reveal>
+               <div className="stats-grid glass-card">
+                  <div className="s-item">
+                     <h3><Counter end={25000} suffix="+" /></h3>
+                     <p>Registrations Today</p>
+                  </div>
+                  <div className="v-div" />
+                  <div className="s-item">
+                     <h3><Counter end={142} /></h3>
+                     <p>Live Venues</p>
+                  </div>
+                  <div className="v-div" />
+                  <div className="s-item">
+                     <h3><Counter end={99} suffix=".9%" /></h3>
+                     <p>Uptime Efficiency</p>
+                  </div>
+               </div>
+            </Reveal>
+        </section>
+
+        {/* FEATURES GRID */}
+        <Section 
+          id="features"
+          tag="Technology" 
+          title="Built for the Next Era" 
+          desc="Eventra isn't a tool; it's an infrastructure for human movement."
+        >
+          <div className={styles.grid}>
+            {[
+              { icon: Zap, title: "Predictive Flow", text: "AI anticipates bottlenecks before they form, redirecting staff automatically." },
+              { icon: Shield, title: "Unified Command", text: "Single source of truth for security, staff, and VIP coordination." },
+              { icon: Map, title: "Spatial Intel", text: "X-ray vision into your venue. Know exactly where your value is concentrated." },
+              { icon: QrCode, title: "Hyper-Scan", text: "Process 50 attendees per minute per gate with biometric-ready scanning." }
+            ].map((f, i) => (
+              <div key={i} className={styles.card}>
+                <div className={styles.cardIcon}><f.icon size={26} /></div>
+                <h3 className={styles.cardTitle}>{f.title}</h3>
+                <p className={styles.cardText}>{f.text}</p>
+              </div>
+            ))}
+          </div>
+        </Section>
+
+        {/* AUDIENCE TABS V2 */}
+        <Section 
+          id="solutions"
+          tag="Ecosystem" 
+          title="Precision for Every Participant" 
+          desc="Select your perspective to see how Eventra re-engineers your experience."
+        >
+          <div className="audience-v2 glass-card">
+             <div className="a-tabs">
+                {["Attendees", "Organizers", "Staff"].map((t, i) => (
+                  <button key={i} className={`a-tab ${activeTab === i ? 'active' : ''}`} onClick={() => setActiveTab(i)}>{t}</button>
+                ))}
+             </div>
+             <div className="a-content animate-fadeIn">
+                {activeTab === 0 && <div className="a-pane">
+                    <h3>Seamless Discovery & Entry</h3>
+                    <p>Register in seconds, receive AI-guided venue coordinates, and enter with a single tap. No more queues, just experiences.</p>
+                </div>}
+                {activeTab === 1 && <div className="a-pane">
+                    <h3>Total Operational Control</h3>
+                    <p>Real-time telemetry, crowd heatmaps, and AI-driven crowd control predictions. Master your venue from any device.</p>
+                </div>}
+                {activeTab === 2 && <div className="a-pane">
+                    <h3>Tactical Field Tools</h3>
+                    <p>Ultra-responsive scanning, real-time incident reporting, and integrated communication for smooth on-ground management.</p>
+                </div>}
+             </div>
+          </div>
+        </Section>
+
+        {/* FINAL CTA V2 */}
+        <section className="final-cta-v2 container">
+            <div className="cta-banner glass-card shine-grid">
+               <Reveal>
+                  <h2>Ready for the Smart Era?</h2>
+                  <p>Join 1,000+ elite organizations scaling with Eventra intelligence.</p>
+                  <div className={styles.heroActions}>
+                    {isLoggedIn ? (
+                      <Link href={dashboardLink} className="btn btn-primary btn-lg">Back to Dashboard</Link>
+                    ) : (
+                      <Link href="/auth" className="btn btn-primary btn-lg">Start Free Now</Link>
+                    )}
+                    <Link href="/contact" className="btn btn-secondary btn-lg">Contact Enterprise</Link>
+                  </div>
+
+               </Reveal>
+            </div>
+        </section>
+      </main>
+
+      <LandingFooter />
 
       <style jsx>{`
-        .landing-container { max-width: 1400px; margin: 0 auto; }
-        
-        .hero-section {
-          position: relative;
-          padding: 6rem 0;
-          text-align: center;
-          margin-bottom: 4rem;
-        }
+        .container { max-width: 1300px; margin: 0 auto; padding: 0 2rem; }
+        .live-badge { display: inline-flex; align-items: center; gap: 0.75rem; padding: 0.5rem 1.25rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: var(--radius-full); color: var(--secondary-light); font-size: 0.75rem; font-weight: 700; margin-bottom: 2.5rem; }
+        .pulse-dot { width: 8px; height: 8px; background: var(--secondary); border-radius: 50%; display: block; box-shadow: 0 0 10px var(--secondary); }
 
-        .hero-glow {
-          position: absolute;
-          top: 50%; left: 50%;
-          transform: translate(-50%, -50%);
-          width: 800px; height: 400px;
-          background: radial-gradient(circle at 30% 50%, rgba(99, 102, 241, 0.4) 0%, transparent 60%),
-                      radial-gradient(circle at 70% 50%, rgba(16, 185, 129, 0.3) 0%, transparent 60%);
-          filter: blur(60px);
-          pointer-events: none;
-          z-index: 0;
-          animation: pulse-glow 8s ease-in-out infinite alternate;
-        }
-        @keyframes pulse-glow {
-          0% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
-          100% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
-        }
+        .hero-product-preview-v2 { position: relative; margin-top: 4rem; perspective: 1000px; }
+        .mockup-v2 { position: relative; max-width: 1100px; margin: 0 auto; padding: 0.75rem !important; border-radius: 20px; animation: hero-float 6s ease-in-out infinite; }
+        @keyframes hero-float { 0%, 100% { transform: translateY(0) rotateX(2deg); } 50% { transform: translateY(-20px) rotateX(0deg); } }
+        .mockup-img-v2 { width: 100%; border-radius: 12px; display: block; filter: brightness(0.9); transition: filter 0.3s; }
+        .mockup-v2:hover .mockup-img-v2 { filter: brightness(1); }
+        .preview-overlay { position: absolute; inset: 0; background: linear-gradient(to top, var(--bg) 0%, transparent 40%); pointer-events: none; }
 
-        .hero-content-box { position: relative; z-index: 1; }
+        .floating-card { position: absolute; padding: 1rem 1.5rem; display: flex; align-items: center; gap: 1rem; border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); z-index: 10; font-size: 0.875rem; text-align: left; }
+        .floating-card strong { display: block; font-size: 1.125rem; }
+        .c-1 { top: 20%; left: -50px; }
+        .c-2 { bottom: 30%; right: -50px; }
 
-        .live-indicator-pill {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.75rem;
-          padding: 0.5rem 1.25rem;
-          background: var(--bg-glass);
-          border: 1px solid var(--border);
-          border-radius: var(--radius-full);
-          font-size: 0.8125rem;
-          font-weight: 700;
-          color: var(--text-muted);
-          margin-bottom: 2rem;
-        }
+        .stats-v2 { padding: 4rem 0; }
+        .stats-grid { display: flex; justify-content: space-around; padding: 4rem !important; background: linear-gradient(135deg, rgba(255,255,255,0.03), transparent); }
+        .s-item { text-align: center; }
+        .s-item h3 { font-size: 3rem; margin-bottom: 0.5rem; color: var(--primary-light); }
+        .s-item p { color: var(--text-faint); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em; }
+        .v-div { width: 1px; height: 60px; background: var(--border); }
 
-        .hero-heading {
-          font-size: clamp(2.5rem, 6vw, 4.5rem);
-          margin-bottom: 1.5rem;
-          line-height: 1.05;
-        }
+        .audience-v2 { padding: 0 !important; overflow: hidden; }
+        .a-tabs { display: flex; border-bottom: 1px solid var(--border); }
+        .a-tab { flex: 1; padding: 1.5rem; background: none; border: none; color: var(--text-muted); font-weight: 700; cursor: pointer; transition: all 0.3s; border-right: 1px solid var(--border); }
+        .a-tab:last-child { border-right: none; }
+        .a-tab.active { background: rgba(99, 102, 241, 0.05); color: var(--primary-light); border-bottom: 2px solid var(--primary); }
+        .a-content { padding: 4rem; text-align: left; min-height: 240px; }
+        .a-pane h3 { font-size: 2rem; margin-bottom: 1.5rem; }
+        .a-pane p { font-size: 1.125rem; color: var(--text-muted); line-height: 1.7; max-width: 800px; }
 
-        .hero-lead {
-          font-size: 1.125rem;
-          color: var(--text-muted);
-          max-width: 600px;
-          margin: 0 auto 3rem;
-          line-height: 1.6;
-        }
+        .final-cta-v2 { padding: 10rem 0; }
+        .cta-banner { padding: 6rem !important; text-align: center; background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.1), transparent); }
+        .cta-banner h2 { font-size: 4rem; margin-bottom: 1.5rem; }
+        .cta-banner p { font-size: 1.25rem; color: var(--text-muted); margin-bottom: 3.5rem; }
 
-        .hero-action-row {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 1rem;
-          margin-bottom: 4rem;
-          max-width: 700px;
-          margin: 0 auto 4rem;
-        }
-
-        .premium-search {
-          flex: 1;
-          display: flex;
-          align-items: center;
-          background: rgba(255, 255, 255, 0.03);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: var(--radius-full);
-          padding: 0.35rem 1.5rem;
-          transition: all 0.4s var(--easing);
-          box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.02), 0 8px 32px rgba(0, 0, 0, 0.2);
-        }
-        
-        .premium-search:focus-within {
-          background: rgba(255, 255, 255, 0.06);
-          border-color: rgba(255, 255, 255, 0.25);
-          box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.05), 0 12px 40px rgba(99, 102, 241, 0.25), 0 0 0 1px rgba(99, 102, 241, 0.3);
-          transform: translateY(-2px);
-        }
-
-        .premium-search input {
-          width: 100%;
-          background: transparent;
-          border: none;
-          padding: 0.75rem;
-          color: var(--text);
-          font-size: 1rem;
-          outline: none;
-        }
-
-        .search-icon { color: var(--text-faint); }
-
-        .hero-metrics {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 2rem;
-        }
-
-        .metric { display: flex; flex-direction: column; gap: 0.25rem; }
-        .metric strong { font-size: 1.5rem; font-family: 'Space Grotesk', sans-serif; }
-        .metric span { font-size: 0.75rem; color: var(--text-faint); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; }
-        .metric-sep { width: 1px; height: 32px; background: var(--border); }
-
-        .filter-section { margin-bottom: 3rem; }
-        .section-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; }
-        
-        .category-scroll {
-          display: flex;
-          gap: 0.75rem;
-          overflow-x: auto;
-          padding-bottom: 1rem;
-        }
-        .category-scroll::-webkit-scrollbar { display: none; }
-
-        .category-chip {
-          padding: 0.625rem 1.25rem;
-          border-radius: var(--radius-full);
-          background: var(--bg-glass);
-          border: 1px solid var(--border);
-          color: var(--text-muted);
-          font-size: 0.8125rem;
-          font-weight: 600;
-          cursor: pointer;
-          white-space: nowrap;
-          transition: var(--transition);
-        }
-
-        .category-chip:hover { border-color: var(--border-bright); color: var(--text); }
-        .category-chip.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: var(--shadow-primary); }
-
-        .modal { width: 100%; max-width: 480px; padding: 3rem !important; text-align: center; }
-        .modal-icon-wrap { margin-bottom: 1.5rem; display: flex; justify-content: center; }
-        .modal-title { font-size: 1.75rem; margin-bottom: 1rem; }
-        .modal-desc { color: var(--text-muted); margin-bottom: 2.5rem; line-height: 1.6; }
-        .modal-actions { display: flex; gap: 1rem; }
-        .modal-actions.full { flex-direction: column; }
-        
-        .success-icon {
-          width: 80px; height: 80px;
-          background: var(--secondary-glow);
-          color: var(--secondary);
-          display: flex; align-items: center; justify-content: center;
-          border-radius: 50%;
-          margin: 0 auto 2rem;
-        }
-
-        .pass-pill {
-          display: inline-block;
-          padding: 0.5rem 1.5rem;
-          background: rgba(255,255,255,0.05);
-          border: 1px dashed var(--border-bright);
-          border-radius: var(--radius-md);
-          font-family: monospace;
-          color: var(--secondary-light);
-          margin-bottom: 2.5rem;
-        }
-
-        .text-center { text-align: center; }
-        .w-full { width: 100%; }
-
-        @media (max-width: 768px) {
-          .hero-action-row { flex-direction: column; }
-          .premium-search { width: 100%; }
-          .hero-metrics { flex-wrap: wrap; gap: 1.5rem; }
-          .metric-sep { display: none; }
+        @media (max-width: 1024px) {
+           .stats-grid { flex-direction: column; gap: 3rem; }
+           .v-div { width: 100%; height: 1px; }
+           .floating-card { display: none; }
+           .cta-banner h2 { font-size: 2.5rem; }
         }
       `}</style>
-    </DashboardLayout>
+    </div>
   );
 }

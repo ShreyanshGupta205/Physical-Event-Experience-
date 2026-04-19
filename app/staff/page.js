@@ -30,8 +30,8 @@ export default function StaffPortal() {
 
     setStatus({ type: 'loading', msg: 'Verifying Security Token...' });
     
-    setTimeout(() => {
-      const result = checkInAttendee(selectedEventId, passId);
+    setTimeout(async () => {
+      const result = await checkInAttendee(selectedEventId, passId);
       if (result.success) {
         setStatus({ type: 'success', msg: 'ACCESS GRANTED' });
         setRecentCheckIns(prev => [
@@ -122,15 +122,16 @@ export default function StaffPortal() {
               <div className="brick-body">
                 <div className="t-stat">
                   <span>CAPACITY UTIL</span>
-                  <strong>{Math.round((activeEvent.checkedIn / Math.max(1, activeEvent.registered)) * 100)}%</strong>
+                  <strong>{activeEvent ? Math.round((activeEvent.checkedIn / Math.max(1, activeEvent.registered)) * 100) : 0}%</strong>
                 </div>
                 <div className="t-stat">
-                  <span>FLOW RATE</span>
-                  <strong>{Math.floor(Math.random() * 20) + 10} p/min</strong>
+                  <span>TOTAL VERIFIED</span>
+                  <strong>{activeEvent ? activeEvent.checkedIn : 0}</strong>
                 </div>
               </div>
+
               <div className="progress-bar mini">
-                 <div className="progress-fill" style={{ width: `${(activeEvent.checkedIn / Math.max(1, activeEvent.registered)) * 100}%`, background: 'var(--secondary)' }} />
+                 <div className="progress-fill" style={{ width: activeEvent ? `${(activeEvent.checkedIn / Math.max(1, activeEvent.registered)) * 100}%` : '0%', background: 'var(--secondary)' }} />
               </div>
             </div>
 

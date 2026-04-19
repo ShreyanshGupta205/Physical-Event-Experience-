@@ -18,7 +18,7 @@ const ROLE_CONFIG = {
 };
 
 export default function Navbar({ onMenuToggle }) {
-  const { user, role, setRole } = useApp();
+  const { user, role, setRole, logout } = useApp();
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -49,7 +49,7 @@ export default function Navbar({ onMenuToggle }) {
             <div className={styles.logoIcon}>
               <Zap size={18} fill="currentColor" />
             </div>
-            <span className={styles.logoText}>EventSphere</span>
+            <span className={styles.logoText}>Eventra</span>
           </Link>
         </div>
 
@@ -109,78 +109,86 @@ export default function Navbar({ onMenuToggle }) {
 
           {/* User Profile */}
           <div className={styles.dropdownWrap}>
-            <button 
-              className={styles.profileBtn}
-              onClick={() => { setProfileOpen(!profileOpen); setNotifOpen(false); }}
-            >
-              <div className={styles.avatar} style={{ background: `linear-gradient(135deg, ${config.color}, #000)` }}>
-                {user.avatar}
-              </div>
-              <div className={styles.profileInfo}>
-                <span className={styles.profileName}>{user.name.split(' ')[0]}</span>
-                <span className={styles.profileRole} style={{ color: config.color }}>{config.label}</span>
-              </div>
-              <ChevronDown size={14} className={`${styles.chevron} ${profileOpen ? styles.chevronOpen : ''}`} />
-            </button>
-
-            {profileOpen && (
-              <div className={styles.dropdown}>
-                
-                <div className={styles.dropdownHeader}>
-                  <div className={styles.dropdownUser}>
-                    <div className={styles.avatar} style={{ background: `linear-gradient(135deg, ${config.color}, #000)` }}>
-                      {user.avatar}
-                    </div>
-                    <div>
-                      <div className={styles.profileName}>{user.name}</div>
-                      <div style={{ fontSize: '11px', color: 'var(--text-faint)' }}>{user.email}</div>
-                    </div>
+            {!user ? (
+              <Link href="/auth" className="btn btn-primary btn-sm" style={{ padding: '0.5rem 1.25rem' }}>
+                Sign In
+              </Link>
+            ) : (
+              <>
+                <button 
+                  className={styles.profileBtn}
+                  onClick={() => { setProfileOpen(!profileOpen); setNotifOpen(false); }}
+                >
+                  <div className={styles.avatar} style={{ background: `linear-gradient(135deg, ${config.color}, #000)` }}>
+                    {user.avatar || user.name?.[0] || 'U'}
                   </div>
-                </div>
+                  <div className={styles.profileInfo}>
+                    <span className={styles.profileName}>{(user.name || 'User').split(' ')[0]}</span>
+                    <span className={styles.profileRole} style={{ color: config.color }}>{config.label}</span>
+                  </div>
+                  <ChevronDown size={14} className={`${styles.chevron} ${profileOpen ? styles.chevronOpen : ''}`} />
+                </button>
 
-                <div className={styles.dropdownSection}>
-                  <div className={styles.sectionLabel}>Tools & Experiences</div>
-                  {role === 'student' && (
-                    <>
-                      <Link href="/student/networking" className={styles.dropdownItem} onClick={() => setProfileOpen(false)}>
-                        <Users size={16} /> Smart Networking
+                {profileOpen && (
+                  <div className={styles.dropdown}>
+                    
+                    <div className={styles.dropdownHeader}>
+                      <div className={styles.dropdownUser}>
+                        <div className={styles.avatar} style={{ background: `linear-gradient(135deg, ${config.color}, #000)` }}>
+                          {user.avatar || user.name?.[0] || 'U'}
+                        </div>
+                        <div>
+                          <div className={styles.profileName}>{user.name}</div>
+                          <div style={{ fontSize: '11px', color: 'var(--text-faint)' }}>{user.email}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className={styles.dropdownSection}>
+                      <div className={styles.sectionLabel}>Tools & Experiences</div>
+                      {role === 'student' && (
+                        <>
+                          <Link href="/student/networking" className={styles.dropdownItem} onClick={() => setProfileOpen(false)}>
+                            <Users size={16} /> Smart Networking
+                          </Link>
+                          <Link href="/student/achievements" className={styles.dropdownItem} onClick={() => setProfileOpen(false)}>
+                            <Award size={16} /> Achievements
+                          </Link>
+                        </>
+                      )}
+                      {role === 'organizer' && (
+                        <Link href="/organizer/create" className={styles.dropdownItem} onClick={() => setProfileOpen(false)}>
+                          <Plus size={16} /> Deploy New Experience
+                        </Link>
+                      )}
+                      <Link href="/settings" className={styles.dropdownItem} onClick={() => setProfileOpen(false)}>
+                        <Settings size={16} /> Protocol Settings
                       </Link>
-                      <Link href="/student/achievements" className={styles.dropdownItem} onClick={() => setProfileOpen(false)}>
-                        <Award size={16} /> Achievements
-                      </Link>
-                    </>
-                  )}
-                  {role === 'organizer' && (
-                    <Link href="/organizer/create" className={styles.dropdownItem} onClick={() => setProfileOpen(false)}>
-                      <Plus size={16} /> Deploy New Experience
-                    </Link>
-                  )}
-                  <Link href="/settings" className={styles.dropdownItem} onClick={() => setProfileOpen(false)}>
-                    <Settings size={16} /> Protocol Settings
-                  </Link>
-                </div>
-                
-                <div className={styles.dropdownDivider} />
+                    </div>
+                    
+                    <div className={styles.dropdownDivider} />
 
-                <div className={styles.dropdownSection}>
-                  <div className={styles.sectionLabel}>Switch Perspective</div>
-                  {Object.entries(ROLE_CONFIG).filter(([r]) => r !== role).map(([key, cfg]) => (
-                    <button key={key} className={styles.dropdownItem} onClick={() => { setRole(key); setProfileOpen(false); }}>
-                      <div className={styles.roleDot} style={{ background: cfg.color }} />
-                      {cfg.label} Portal
-                    </button>
-                  ))}
-                </div>
+                    <div className={styles.dropdownSection}>
+                      <div className={styles.sectionLabel}>Switch Perspective</div>
+                      {Object.entries(ROLE_CONFIG).filter(([r]) => r !== role).map(([key, cfg]) => (
+                        <button key={key} className={styles.dropdownItem} onClick={() => { setRole(key); setProfileOpen(false); }}>
+                          <div className={styles.roleDot} style={{ background: cfg.color }} />
+                          {cfg.label} Portal
+                        </button>
+                      ))}
+                    </div>
 
-                <div className={styles.dropdownDivider} />
+                    <div className={styles.dropdownDivider} />
 
-                <div className={styles.dropdownSection}>
-                  <button className={`${styles.dropdownItem} ${styles.danger}`}>
-                    <LogOut size={16} /> Sign Out
-                  </button>
-                </div>
+                    <div className={styles.dropdownSection}>
+                      <button className={`${styles.dropdownItem} ${styles.danger}`} onClick={logout}>
+                        <LogOut size={16} /> Sign Out
+                      </button>
+                    </div>
 
-              </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
           

@@ -2,7 +2,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { EVENTS, REGISTRATION_FEED, CROWD_TIMELINE } from '@/data/mockData';
+import { useApp } from '@/context/AppContext';
+import { REGISTRATION_FEED, CROWD_TIMELINE } from '@/data/mockData';
 import {
   Share2, PlusCircle, BarChart2, Map, Radio
 } from 'lucide-react';
@@ -14,20 +15,64 @@ import LiveFeed from '@/components/organizer/LiveFeed';
 import KpiGrid from '@/components/organizer/KpiGrid';
 import ZoneMatrix from '@/components/organizer/ZoneMatrix';
 
-const MANAGED_EVENT_ID = 'evt-001';
-
 export default function OrganizerDashboard() {
-  const event = EVENTS.find(e => e.id === MANAGED_EVENT_ID) || EVENTS[0];
-  const [registeredCount, setRegisteredCount] = useState(event.registered);
+  const { events, loading } = useApp();
+  const event = events[0]; // Default to first event or null
+  const [telemetry, setTelemetry] = useState({ registered: 0, checkedIn: 0 });
 
   useEffect(() => {
-    const t = setInterval(() => {
-      setRegisteredCount(c => c + (Math.random() > 0.6 ? 1 : 0));
-    }, 6000);
-    return () => clearInterval(t);
-  }, []);
+    if (event) {
+      setTelemetry({ registered: event.registered, checkedIn: event.checkedIn });
+      
+      const t = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/events/${event.id}/stats`);
+          if (res.ok) {
+            const data = await res.json();
+            setTelemetry({ registered: data.registered, checkedIn: data.checkedIn });
+          }
+        } catch (e) {
+          console.error("Telemetry fetch failed", e);
+        }
+      }, 4000); // Poll every 4 seconds
+      return () => clearInterval(t);
+    }
+  }, [event?.id]);
 
-  const pct = Math.round((registeredCount / event.capacity) * 100);
+  const pct = event ? Math.round((telemetry.registered / event.capacity) * 100) : 0;
+
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="telemetry-loading animate-pulse">
+           <Radio className="animate-spin" size={32} />
+           <p>SYNCHRONIZING SECURE TELEMETRY...</p>
+        </div>
+        <style jsx>{`
+          .telemetry-loading { height: 70vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; color: var(--text-faint); }
+        `}</style>
+      </DashboardLayout>
+    );
+  }
+
+  if (!event || !event.gates || !event.zones) {
+    return (
+      <DashboardLayout>
+        <div className="empty-mission-state">
+           <Map size={48} className="text-faint" />
+           <h2>No Active Missions</h2>
+           <p>You currently have no events assigned to your coordinates.</p>
+           <Link href="/organizer/create" className="btn btn-primary">INITIALIZE NEW EVENT</Link>
+        </div>
+        <style jsx>{`
+          .empty-mission-state { height: 70vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem; text-align: center; }
+          .empty-mission-state p { color: var(--text-faint); margin-bottom: 1rem; }
+        `}</style>
+      </DashboardLayout>
+    );
+  }
+
 
   return (
     <DashboardLayout>
@@ -51,7 +96,8 @@ export default function OrganizerDashboard() {
         </header>
 
         {/* Global KPIs via Modular Component */}
-        <KpiGrid registeredCount={registeredCount} pct={pct} />
+        <KpiGrid registeredCount={telemetry.registered} pct={pct} />
+
 
         <div className="mission-main-grid">
           {/* Analytics Well */}

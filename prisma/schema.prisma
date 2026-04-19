@@ -1,0 +1,108 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Users ─────────────────────────────────────────────────────────────
+model User {
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  email         String         @unique
+  role          String         @default("student") // student | organizer | admin | staff
+  status        String         @default("active")
+  joined        DateTime       @default(now())
+  registrations Registration[]
+}
+
+// ─── Events ────────────────────────────────────────────────────────────
+model Event {
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
+  type          String
+  category      String
+  description   String
+  venue         String
+  date          String
+  time          String
+  endDate       String
+  endTime       String
+  capacity      Int
+  registered    Int            @default(0)
+  checkedIn     Int            @default(0)
+  status        String         @default("upcoming") // upcoming | live | ended
+  featured      Boolean        @default(false)
+  trending      Boolean        @default(false)
+  image         String?
+  color         String         @default("#6C63FF")
+  organizerId   String
+  organizerName String
+  tags          String         @default("")
+
+  // Relations
+  gates         Gate[]
+  zones         Zone[]
+  schedule      ScheduleItem[]
+  speakers      Speaker[]
+  registrations Registration[]
+}
+
+// ─── Event Details (Relational Documents) ────────────────────────────────
+model Gate {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  queue      Int    @default(0)
+  capacity   Int
+  throughput Int    @default(0)
+  eventId    String @db.ObjectId
+  event      Event  @relation(fields: [eventId], references: [id])
+}
+
+model Zone {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  capacity   Int
+  occupancy  Float  @default(0.0)
+  color      String @default("#6C63FF")
+  eventId    String @db.ObjectId
+  event      Event  @relation(fields: [eventId], references: [id])
+}
+
+model ScheduleItem {
+  id      String @id @default(auto()) @map("_id") @db.ObjectId
+  time    String
+  title   String
+  type    String // logistics | session | workshop | main
+  eventId String @db.ObjectId
+  event   Event  @relation(fields: [eventId], references: [id])
+}
+
+model Speaker {
+  id      String  @id @default(auto()) @map("_id") @db.ObjectId
+  name    String
+  role    String
+  avatar  String?
+  eventId String  @db.ObjectId
+  event   Event   @relation(fields: [eventId], references: [id])
+}
+
+// ─── Registrations ──────────────────────────────────────────────────────
+model Registration {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  status     String   @default("confirmed") // confirmed | pending | cancelled
+  qrCode     String   @unique
+  passId     String   @unique
+  bookedAt   DateTime @default(now())
+  
+  // Relations
+  userId     String   @db.ObjectId
+  user       User     @relation(fields: [userId], references: [id])
+  eventId    String   @db.ObjectId
+  event      Event    @relation(fields: [eventId], references: [id])
+}

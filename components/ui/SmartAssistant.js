@@ -5,7 +5,7 @@ import { MessageSquare, X, Send, Bot, Sparkles, Zap, Minimize2 } from 'lucide-re
 export default function SmartAssistant() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { role: 'bot', text: 'Identity Verified. I am Sphere-AI. How can I assist with your experience coordinates today?' }
+    { role: 'bot', text: 'Identity Verified. I am Eventra AI. How can I assist with your experience coordinates today?' }
   ]);
   const [input, setInput] = useState('');
   const scrollRef = useRef(null);
@@ -44,7 +44,7 @@ export default function SmartAssistant() {
             <Bot size={24} />
             <div className="pulse-ring" />
           </div>
-          <span className="trigger-label">ASK SPHERE-AI</span>
+          <span className="trigger-label">ASK EVENTRA AI</span>
         </button>
       )}
 
@@ -58,7 +58,7 @@ export default function SmartAssistant() {
                 <div className="online-dot" />
               </div>
               <div className="bot-meta">
-                <strong>SPHERE-AI</strong>
+                <strong>EVENTRA AI</strong>
                 <span>Active Core</span>
               </div>
             </div>

@@ -1,14 +1,21 @@
 /** @type {import('next').NextConfig} */
-const path = require('path');
-
 const nextConfig = {
   reactStrictMode: true,
-  turbopack: {
-    root: __dirname,
-    resolveAlias: {
-      '@': path.resolve(__dirname),
-    },
-  },
-}
 
-module.exports = nextConfig
+  // Required for Prisma to work correctly in Next.js 15+ / App Router
+  serverExternalPackages: ['@prisma/client', 'prisma'],
+
+  // Path alias for @/ imports
+  experimental: {},
+
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+      { protocol: 'https', hostname: 'firebasestorage.googleapis.com' },
+    ],
+  },
+
+  turbopack: {},
+};
+
+module.exports = nextConfig;
