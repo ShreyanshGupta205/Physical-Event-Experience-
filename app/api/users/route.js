@@ -16,16 +16,17 @@ export async function POST(request) {
     }
 
     const data = validation.data;
+    const email = data.email.toLowerCase();
 
     // Upsert user based on email (Firebase's primary unique identifier)
     const user = await prisma.user.upsert({
-      where: { email: data.email },
+      where: { email },
       update: {
         name: data.name || undefined,
       },
       create: {
         name: data.name || 'Eventra Member',
-        email: data.email,
+        email,
         role: data.role,
         status: 'active'
       }
@@ -42,11 +43,13 @@ export async function POST(request) {
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const email = searchParams.get('email');
+    const rawEmail = searchParams.get('email');
 
-    if (!email) {
+    if (!rawEmail) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
+
+    const email = rawEmail.toLowerCase();
 
     const user = await prisma.user.findUnique({
       where: { email }

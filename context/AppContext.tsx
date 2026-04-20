@@ -82,26 +82,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (firebaseUser) {
         setIsLoggedIn(true);
         try {
-          let res = await fetch(`/api/users?email=${encodeURIComponent(firebaseUser.email!)}`);
+          const email = firebaseUser.email!.toLowerCase();
+          const res = await fetch(`/api/users?email=${encodeURIComponent(email)}`);
           
-          if (!res.ok && res.status === 404) {
-             res = await fetch('/api/users', {
-               method: 'POST',
-               headers: { 'Content-Type': 'application/json' },
-               body: JSON.stringify({ 
-                 name: firebaseUser.displayName || 'Eventra Member', 
-                 email: firebaseUser.email,
-                 role: 'student'
-               })
-             });
-          }
-
           if (res.ok) {
             const mongoUser = await res.json();
             setUser(mongoUser);
             setRole(mongoUser.role || 'student');
           } else {
-            setUser(null); 
+            // User exists in Firebase but not in MongoDB yet (syncing...)
+            // Just set basic info and wait for AuthPage sync or next reload
+            setUser({ email: firebaseUser.email!, name: firebaseUser.displayName || 'User', id: '', role: 'student' });
           }
         } catch (e) {
           setUser({ email: firebaseUser.email!, name: firebaseUser.displayName!, id: '', role: 'student' });

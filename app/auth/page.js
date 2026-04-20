@@ -48,7 +48,8 @@ export default function AuthPage() {
           setLoading(false);
           return;
         }
-        const userCredential = await createUserWithEmailAndPassword(auth, form.email, form.password);
+        const email = form.email.toLowerCase();
+        const userCredential = await createUserWithEmailAndPassword(auth, email, form.password);
         await updateProfile(userCredential.user, { displayName: form.name });
         
         // Sync with MongoDB — onAuthStateChanged will also fire but we do it here
@@ -58,7 +59,7 @@ export default function AuthPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             name: form.name, 
-            email: form.email,
+            email,
             role: selectedRole
           })
         });
@@ -71,10 +72,11 @@ export default function AuthPage() {
 
       } else {
         // LOGIN flow
-        await signInWithEmailAndPassword(auth, form.email, form.password);
+        const email = form.email.toLowerCase();
+        await signInWithEmailAndPassword(auth, email, form.password);
         
         // Fetch MongoDB record for role
-        const fetchRes = await fetch(`/api/users?email=${encodeURIComponent(form.email)}`);
+        const fetchRes = await fetch(`/api/users?email=${encodeURIComponent(email)}`);
         
         let destination = '/';
         if (fetchRes.ok) {
