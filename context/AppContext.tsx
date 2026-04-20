@@ -1,22 +1,70 @@
 'use client';
-import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { auth } from '@/lib/firebase';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth';
 
-const AppContext = createContext(null);
+export type UserRole = 'student' | 'organizer' | 'admin' | 'staff';
 
-export function AppProvider({ children }) {
-  const [role, setRole] = useState('student'); // 'student' | 'organizer' | 'admin' | 'staff'
-  const [user, setUser] = useState(null);
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  avatar?: string;
+}
+
+export interface AppEvent {
+  id: string;
+  title: string;
+  type: string;
+  category: string;
+  description: string;
+  venue: string;
+  date: string;
+  time: string;
+  capacity: number;
+  registered: number;
+  checkedIn: number;
+  organizerId: string;
+  organizerName: string;
+  color: string;
+  tags: string[];
+}
+
+interface AppContextType {
+  role: UserRole;
+  setRole: (role: UserRole) => void;
+  user: UserProfile | null;
+  setUser: (user: UserProfile | null) => void;
+  isLoggedIn: boolean;
+  sessionLoading: boolean;
+  login: (userData: UserProfile, selectedRole: UserRole) => void;
+  logout: () => Promise<void>;
+  registrations: any[];
+  registerForEvent: (event: AppEvent) => Promise<any>;
+  checkInAttendee: (eventId: string, passId: string) => Promise<{ success: boolean; message: string }>;
+  events: AppEvent[];
+  setEvents: React.Dispatch<React.SetStateAction<AppEvent[]>>;
+  notifications: any[];
+  setNotifications: React.Dispatch<React.SetStateAction<any[]>>;
+  sidebarOpen: boolean;
+  setSidebarOpen: (open: boolean) => void;
+  loading: boolean;
+}
+
+const AppContext = createContext<AppContextType | null>(null);
+
+export function AppProvider({ children }: { children: ReactNode }) {
+  const [role, setRole] = useState<UserRole>('student');
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [sessionLoading, setSessionLoading] = useState(true);
-  const [registrations, setRegistrations] = useState([]);
-  const [events, setEvents] = useState([]);
-  const [notifications, setNotifications] = useState([]);
+  const [registrations, setRegistrations] = useState<any[]>([]);
+  const [events, setEvents] = useState<AppEvent[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [loading, setLoading] = useState(true);
 
-  // Sync role with path — run once on mount only (no dependency on `role` to prevent infinite loop)
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const path = window.location.pathname;
@@ -25,21 +73,17 @@ export function AppProvider({ children }) {
       else if (path.startsWith('/staff')) setRole('staff');
       else if (path.startsWith('/student')) setRole('student');
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Firebase Auto Session Persistence
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setSessionLoading(true);
       if (firebaseUser) {
         setIsLoggedIn(true);
         try {
-          // Sync with MongoDB to get the real BSON ID and Role
-          let res = await fetch(`/api/users?email=${encodeURIComponent(firebaseUser.email)}`);
+          let res = await fetch(`/api/users?email=${encodeURIComponent(firebaseUser.email!)}`);
           
           if (!res.ok && res.status === 404) {
-             // SELF-HEALING: If user exists in Auth but not in DB, sync them now
-             console.log("Healing session: Syncing missing user to DB...");
              res = await fetch('/api/users', {
                method: 'POST',
                headers: { 'Content-Type': 'application/json' },
@@ -56,13 +100,10 @@ export function AppProvider({ children }) {
             setUser(mongoUser);
             setRole(mongoUser.role || 'student');
           } else {
-            console.error("Failed to synchronize session with database.");
             setUser(null); 
           }
         } catch (e) {
-          console.error("Context Sync Error:", e);
-          // Still mark as logged in via Firebase even if DB is down
-          setUser({ email: firebaseUser.email, name: firebaseUser.displayName });
+          setUser({ email: firebaseUser.email!, name: firebaseUser.displayName!, id: '', role: 'student' });
         }
       } else {
         setIsLoggedIn(false);
@@ -75,22 +116,16 @@ export function AppProvider({ children }) {
     return () => unsubscribe();
   }, []);
 
-  // Fetch initial data — wait until session is resolved AND user is known
   useEffect(() => {
-    // Don't run while session is still loading
     if (sessionLoading) return;
-
     async function loadData() {
       try {
         setLoading(true);
-        // Always load events (public data)
         const resEvents = await fetch('/api/events');
         if (resEvents.ok) {
           const evts = await resEvents.json();
           setEvents(evts || []);
         }
-
-        // Load registrations only if logged in
         if (user?.id) {
           const resRegs = await fetch(`/api/registrations?userId=${user.id}`);
           if (resRegs.ok) {
@@ -99,16 +134,15 @@ export function AppProvider({ children }) {
           }
         }
       } catch (e) {
-        console.error('Failed to init backend data:', e);
+        console.error('Data init failed:', e);
       } finally {
         setLoading(false);
       }
     }
     loadData();
-  }, [sessionLoading, user?.id]); // Re-runs when session finishes loading or user logs in/out
+  }, [sessionLoading, user?.id]);
 
-
-  const login = useCallback((userData, selectedRole) => {
+  const login = useCallback((userData: UserProfile, selectedRole: UserRole) => {
     setUser(userData);
     setRole(selectedRole);
     setIsLoggedIn(true);
@@ -124,7 +158,7 @@ export function AppProvider({ children }) {
     }
   }, []);
 
-  const registerForEvent = useCallback(async (event) => {
+  const registerForEvent = useCallback(async (event: AppEvent) => {
     try {
       const token = await auth.currentUser?.getIdToken();
       const res = await fetch('/api/registrations', {
@@ -136,29 +170,25 @@ export function AppProvider({ children }) {
         body: JSON.stringify({ 
           eventId: event.id, 
           userId: user?.id,
-          userEmail: user?.email      // fallback for ID mismatch after re-seed
+          userEmail: user?.email
         })
       });
       
       const newReg = await res.json();
-      
-      if (!res.ok) {
-        throw new Error(newReg.error || 'Registration failed');
-      }
+      if (!res.ok) throw new Error(newReg.error || 'Registration failed');
 
       setRegistrations(prev => [newReg, ...prev]);
       setEvents(prev => prev.map(e =>
-        e.id === event.id ? { ...e, registered: e.registered + 1 } : e
+        e.id === event.id ? { ...e, registered: (e.registered || 0) + 1 } : e
       ));
-      
       return newReg;
     } catch (e) {
       console.error('Registration Error:', e);
       throw e;
     }
-  }, [user?.id]);
+  }, [user?.id, user?.email]);
 
-  const checkInAttendee = useCallback(async (eventId, passId) => {
+  const checkInAttendee = useCallback(async (eventId: string, passId: string) => {
     try {
       const token = await auth.currentUser?.getIdToken();
       const res = await fetch('/api/checkin', {
@@ -170,23 +200,18 @@ export function AppProvider({ children }) {
         body: JSON.stringify({ eventId, passId })
       });
       const data = await res.json();
-      
-      if (!res.ok) {
-        return { success: false, message: data.message || data.error || 'Failed to check in' };
-      }
+      if (!res.ok) return { success: false, message: data.message || data.error || 'Failed to check in' };
 
-      // Update local checked-in count
       setEvents(prev => prev.map(e =>
-        e.id === eventId ? { ...e, checkedIn: e.checkedIn + 1 } : e
+        e.id === eventId ? { ...e, checkedIn: (e.checkedIn || 0) + 1 } : e
       ));
-
       return data;
-    } catch (error) {
+    } catch (error: any) {
       return { success: false, message: error.message || 'Network error' };
     }
   }, []);
 
-  const switchRole = useCallback((newRole) => {
+  const switchRole = useCallback((newRole: UserRole) => {
     setRole(newRole);
   }, []);
 
@@ -195,7 +220,6 @@ export function AppProvider({ children }) {
       role, setRole: switchRole,
       user, setUser,
       isLoggedIn, sessionLoading, login, logout,
-
       registrations, registerForEvent,
       checkInAttendee,
       events, setEvents,

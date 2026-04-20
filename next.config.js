@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  output: 'standalone',
 
   // Required for Prisma to work correctly in Next.js 15+ / App Router
   serverExternalPackages: ['@prisma/client', 'prisma'],

@@ -3,6 +3,10 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const genAI = process.env.GEMINI_API_KEY ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
 
+// Simple in-memory cache for redundant queries
+const AI_CACHE = new Map();
+const CACHE_LIMIT = 500; // Prevent memory leak by capping cache size
+
 export async function POST(req) {
   try {
     if (!genAI) {
@@ -16,6 +20,13 @@ export async function POST(req) {
     }
 
     const lastMsg = messages[messages.length - 1].text;
+    const cacheKey = `${role}_${lastMsg.toLowerCase().trim()}`;
+
+    // Check cache for instant delivery
+    if (AI_CACHE.has(cacheKey)) {
+      console.log('Serving from AI Cache:', cacheKey);
+      return NextResponse.json({ text: AI_CACHE.get(cacheKey), cached: true });
+    }
     
     // Model selection loop - Updated for 2026 candidates
     const MODEL_CANDIDATES = ['gemini-2.0-flash', 'gemini-flash-latest', 'gemini-pro-latest'];
@@ -53,6 +64,13 @@ export async function POST(req) {
     if (!text) {
       return NextResponse.json({ error: `AI Telemetry Offline: ${lastErr}. Check GEMINI_API_KEY integrity.` }, { status: 503 });
     }
+
+    // Save to cache for future efficiency
+    if (AI_CACHE.size >= CACHE_LIMIT) {
+      const firstKey = AI_CACHE.keys().next().value;
+      AI_CACHE.delete(firstKey);
+    }
+    AI_CACHE.set(cacheKey, text);
 
     return NextResponse.json({ text });
 

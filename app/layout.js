@@ -1,6 +1,6 @@
 import './globals.css';
 import { AppProvider } from '@/context/AppContext';
-import SmartAssistant from '@/components/ui/SmartAssistant';
+import DynamicAssistant from '@/components/ui/DynamicAssistant';
 
 export const metadata = {
   title: 'Eventra — Smart Event Experience Platform',
@@ -14,7 +14,7 @@ export default function RootLayout({ children }) {
       <body>
         <AppProvider>
           {children}
-          <SmartAssistant />
+          <DynamicAssistant />
         </AppProvider>
       </body>
     </html>

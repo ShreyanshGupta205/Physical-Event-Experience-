@@ -65,11 +65,11 @@ export default function Navbar({ onMenuToggle, onBannerStateChange }) {
           <button className={styles.bannerClose} onClick={closeBanner}><X size={14} /></button>
         </div>
       )}
-      <header className={`${styles.navbar} ${scrolled ? styles.scrolled : ''}`} style={{ top: 'var(--banner-offset)' }}>
+      <header className={`${styles.navbar} ${scrolled ? styles.scrolled : ''}`} style={{ top: 'var(--banner-offset)' }} role="banner">
         
         {/* Left: Logo & Menu */}
         <div className={styles.left}>
-          <button className={styles.menuBtn} onClick={onMenuToggle}>
+          <button className={styles.menuBtn} onClick={onMenuToggle} aria-label="Open main menu">
             <Menu size={20} />
           </button>
           
@@ -82,17 +82,18 @@ export default function Navbar({ onMenuToggle, onBannerStateChange }) {
         </div>
 
         {/* Center: Universal Search */}
-        <div className={styles.searchBar}>
+        <div className={styles.searchBar} role="search">
           <Search size={16} className={styles.searchIcon} />
           <input 
             type="text" 
             placeholder="Search experiences..." 
             className={styles.searchInput}
             value={searchQuery}
+            aria-label="Search experiences"
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           {searchQuery && (
-            <button className={styles.clearBtn} onClick={() => setSearchQuery('')}>
+            <button className={styles.clearBtn} onClick={() => setSearchQuery('')} aria-label="Clear search">
               <X size={14} />
             </button>
           )}

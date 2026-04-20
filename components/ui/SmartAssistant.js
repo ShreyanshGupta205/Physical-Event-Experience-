@@ -83,7 +83,7 @@ export default function SmartAssistant() {
             <button className="btn btn-ghost btn-icon btn-sm" onClick={() => setIsOpen(false)}><Minimize2 size={16} /></button>
           </header>
 
-          <div className="chat-body" ref={scrollRef}>
+          <div className="chat-body" ref={scrollRef} role="log" aria-live="polite" aria-busy={loading}>
             {messages.map((msg, i) => (
               <div key={i} className={`message-row ${msg.role}`}>
                 <div className="message-bubble">

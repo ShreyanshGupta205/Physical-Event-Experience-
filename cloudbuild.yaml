@@ -1,0 +1,34 @@
+steps:
+  - name: 'node:20'
+    args: ['npm', 'install']
+  - name: 'node:20'
+    args: ['npm', 'test']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build',
+      '--tag', 'us-central1-docker.pkg.dev/$PROJECT_ID/eventra-repo/smart-event:latest',
+      '--build-arg', 'DATABASE_URL=${_DATABASE_URL}',
+      '--build-arg', 'GEMINI_API_KEY=${_GEMINI_API_KEY}',
+      '--build-arg', 'NEXT_PUBLIC_FIREBASE_API_KEY=${_NEXT_PUBLIC_FIREBASE_API_KEY}',
+      '--build-arg', 'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${_NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN}',
+      '--build-arg', 'NEXT_PUBLIC_FIREBASE_PROJECT_ID=${_NEXT_PUBLIC_FIREBASE_PROJECT_ID}',
+      '--build-arg', 'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=${_NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}',
+      '--build-arg', 'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${_NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID}',
+      '--build-arg', 'NEXT_PUBLIC_FIREBASE_APP_ID=${_NEXT_PUBLIC_FIREBASE_APP_ID}',
+      '--build-arg', 'NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=${_NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID}',
+      '.'
+    ]
+images:
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/eventra-repo/smart-event:latest'
+substitutions:
+  _DATABASE_URL: ''
+  _GEMINI_API_KEY: ''
+  _NEXT_PUBLIC_FIREBASE_API_KEY: ''
+  _NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ''
+  _NEXT_PUBLIC_FIREBASE_PROJECT_ID: ''
+  _NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ''
+  _NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ''
+  _NEXT_PUBLIC_FIREBASE_APP_ID: ''
+  _NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: ''
+options:
+  substitution_option: 'ALLOW_LOOSE'
