@@ -147,8 +147,8 @@ export default function UserManagementPage() {
                         {u.name.slice(0, 1).toUpperCase()}
                       </div>
                       <div>
-                        <p style={{ fontSize: 13, fontWeight: 700 }}>{u.name}</p>
-                        <p style={{ fontSize: 11, color: 'var(--text-faint)' }}>{u.email}</p>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255, 255, 255, 0.95)' }}>{u.name}</p>
+                        <p style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.6)' }}>{u.email}</p>
                       </div>
                     </div>
                   </td>

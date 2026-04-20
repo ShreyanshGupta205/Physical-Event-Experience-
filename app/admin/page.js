@@ -178,8 +178,8 @@ export default function AdminPanel() {
                           <div className="ident-cell">
                             <div className="ident-avatar">{u.name.charAt(0)}</div>
                             <div className="ident-meta">
-                              <strong>{u.name}</strong>
-                              <span>{u.email}</span>
+                              <strong style={{ color: 'rgba(255, 255, 255, 0.95)' }}>{u.name}</strong>
+                              <span style={{ color: 'rgba(255, 255, 255, 0.6)' }}>{u.email}</span>
                             </div>
                           </div>
                         </td>
