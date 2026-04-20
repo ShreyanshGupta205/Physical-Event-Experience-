@@ -44,7 +44,10 @@ export default function SmartAssistant() {
       if (res.ok) {
         setMessages(prev => [...prev, { role: 'bot', text: data.text }]);
       } else {
-        setMessages(prev => [...prev, { role: 'bot', text: "Error: " + (data.error || "System telemetry gap detected.") }]);
+        const friendlyMsg = data.retryable
+          ? '⚡ Eventra AI is momentarily throttled. Please wait a moment and try again.'
+          : '⚠️ AI system is currently offline. Please try again shortly.';
+        setMessages(prev => [...prev, { role: 'bot', text: friendlyMsg }]);
       }
     } catch (err) {
       setMessages(prev => [...prev, { role: 'bot', text: "Critical: AI connection lost. Please check your data link." }]);

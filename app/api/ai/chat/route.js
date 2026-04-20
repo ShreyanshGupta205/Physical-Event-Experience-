@@ -29,7 +29,8 @@ export async function POST(req) {
     }
     
     // Model selection loop - Updated for 2026 candidates
-    const MODEL_CANDIDATES = ['gemini-2.0-flash', 'gemini-flash-latest', 'gemini-pro-latest'];
+    // Only free-tier Flash models. Pro/paid models have 0 free quota and will always 429.
+    const MODEL_CANDIDATES = ['gemini-2.0-flash', 'gemini-1.5-flash'];
     let text = null;
     let lastErr = null;
 
@@ -44,14 +45,17 @@ export async function POST(req) {
     
     Response length: 1-3 sentences. Professional tone.`;
 
-    // Resilience Layer: Recursive Backoff for 429 errors
-    const fetchWithBackoff = async (fn, retries = 3, delay = 1000) => {
+    // Resilience Layer: Exponential Backoff with jitter for 429 errors
+    const fetchWithBackoff = async (fn, retries = 3, delay = 800) => {
       try {
         return await fn();
       } catch (err) {
-        if (retries > 0 && (err.message.includes('429') || err.message.includes('quota'))) {
-          console.warn(`AI Quota Hit. Retrying in ${delay}ms... (Retries left: ${retries})`);
-          await new Promise(res => setTimeout(res, delay));
+        const is429 = err.message.includes('429') || err.message.includes('quota');
+        if (retries > 0 && is429) {
+          // Add ±30% jitter to prevent thundering herd on shared quota
+          const jitter = delay * (0.7 + Math.random() * 0.6);
+          console.warn(`AI Quota Hit. Retrying in ${Math.round(jitter)}ms... (Retries left: ${retries})`);
+          await new Promise(res => setTimeout(res, jitter));
           return fetchWithBackoff(fn, retries - 1, delay * 2);
         }
         throw err;
@@ -79,7 +83,12 @@ export async function POST(req) {
     }
 
     if (!text) {
-      return NextResponse.json({ error: `AI Telemetry Offline: ${lastErr}. Check GEMINI_API_KEY integrity.` }, { status: 503 });
+      // Surface a clean, user-friendly message — not raw API error dumps
+      console.error('AI all models exhausted. Last error:', lastErr);
+      return NextResponse.json({ 
+        error: 'Eventra AI is temporarily offline. Please try again in a moment.',
+        retryable: true 
+      }, { status: 503 });
     }
 
     // Save to cache for future efficiency

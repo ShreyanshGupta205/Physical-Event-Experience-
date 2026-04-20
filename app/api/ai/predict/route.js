@@ -51,15 +51,28 @@ MISSION:
 Analyze this crowd telemetry. Provide a concise, highly strategic, 3-sentence operational prediction on what the organizers should expect regarding crowd flow over the next 30 minutes, and any actions they should take immediately. 
 Adopt a professional, tactical, "control center" tone.`;
 
-    // 3. Try Gemini — model names to attempt in sequence (Updated for 2026)
-    const MODEL_CANDIDATES = ['gemini-2.0-flash', 'gemini-flash-latest', 'gemini-pro-latest'];
+    // 3. Try Gemini — only free-tier Flash models (paid Pro models have 0 free quota)
+    const MODEL_CANDIDATES = ['gemini-2.0-flash', 'gemini-1.5-flash'];
     let text = null;
+
+    const fetchWithBackoff = async (fn, retries = 2, delay = 800) => {
+      try { return await fn(); }
+      catch (err) {
+        const is429 = err.message.includes('429') || err.message.includes('quota');
+        if (retries > 0 && is429) {
+          const jitter = delay * (0.7 + Math.random() * 0.6);
+          await new Promise(res => setTimeout(res, jitter));
+          return fetchWithBackoff(fn, retries - 1, delay * 2);
+        }
+        throw err;
+      }
+    };
 
     if (aiParams) {
       for (const modelName of MODEL_CANDIDATES) {
         try {
           const model = aiParams.getGenerativeModel({ model: modelName });
-          const result = await model.generateContent(prompt);
+          const result = await fetchWithBackoff(() => model.generateContent(prompt));
           text = result.response.text();
           break; // success — stop trying
         } catch (aiErr) {

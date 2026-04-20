@@ -27,29 +27,36 @@ export default function CreateEventPage() {
     tags: []
   });
   const [isMagicLoading, setIsMagicLoading] = useState(false);
+  const [magicNotice, setMagicNotice] = useState(null); // 'ai' | 'fallback' | 'error'
 
   const handleMagicGenerate = async () => {
     if (!formData.title) return;
     setIsMagicLoading(true);
+    setMagicNotice(null);
     try {
       const res = await fetch('/api/ai/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: formData.title })
       });
-      if (res.ok) {
-        const data = await res.json();
+      const data = await res.json();
+      if (res.ok && data.description) {
         setFormData(prev => ({
           ...prev,
           description: data.description,
-          type: data.type,
-          category: data.category,
-          color: data.color,
-          tags: data.suggestedTags
+          type: data.type || prev.type,
+          category: data.category || prev.category,
+          color: data.color || prev.color,
+          tags: data.suggestedTags || prev.tags
         }));
+        // Server returns fallback-generated content transparently
+        setMagicNotice(data._source === 'fallback' ? 'fallback' : 'ai');
+      } else {
+        setMagicNotice('error');
       }
     } catch (e) {
-      console.error("Magic fail:", e);
+      console.error('Magic fail:', e);
+      setMagicNotice('error');
     } finally {
       setIsMagicLoading(false);
     }
@@ -129,6 +136,15 @@ export default function CreateEventPage() {
                   <span>{isMagicLoading ? 'AI Manifesting...' : 'Magic Generate'}</span>
                 </button>
               </div>
+              {magicNotice === 'ai' && (
+                <div className="magic-notice magic-notice--success">✦ AI-generated profile applied successfully.</div>
+              )}
+              {magicNotice === 'fallback' && (
+                <div className="magic-notice magic-notice--warn">⚡ AI offline — smart template applied. You can edit the fields below.</div>
+              )}
+              {magicNotice === 'error' && (
+                <div className="magic-notice magic-notice--error">✕ Generation failed. Please fill in the details manually.</div>
+              )}
 
               <div className="input-group">
                 <label>Event Name</label>
@@ -306,6 +322,14 @@ export default function CreateEventPage() {
            animation: magic-border 2s infinite; pointer-events: none;
         }
         @keyframes magic-border { 0% { opacity: 0; transform: scale(0.98); } 50% { opacity: 0.5; } 100% { opacity: 0; transform: scale(1.02); } }
+
+        .magic-notice {
+          font-size: 0.75rem; font-weight: 700; padding: 0.6rem 1rem;
+          border-radius: 8px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;
+        }
+        .magic-notice--success { background: rgba(74, 222, 128, 0.1); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.2); }
+        .magic-notice--warn { background: rgba(250, 176, 5, 0.1); color: #fab005; border: 1px solid rgba(250, 176, 5, 0.2); }
+        .magic-notice--error { background: rgba(255, 71, 87, 0.1); color: #ff6b81; border: 1px solid rgba(255, 71, 87, 0.2); }
 
         .tags-preview { display: flex; flex-wrap: wrap; gap: 0.5rem; }
         .s-tag { font-size: 0.7rem; font-weight: 800; color: var(--secondary); background: var(--secondary-glow); padding: 0.2rem 0.6rem; border-radius: 4px; }
