@@ -6,5 +6,6 @@ const SmartAssistant = dynamic(() => import('./SmartAssistant'), {
 });
 
 export default function DynamicAssistant() {
+  if (typeof window === 'undefined') return null;
   return <SmartAssistant />;
 }
