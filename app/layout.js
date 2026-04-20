@@ -52,6 +52,17 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-100EVENTRA"></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-100EVENTRA');
+            `,
+          }}
+        />
         <AppProvider>
           {children}
           <DynamicAssistant />

@@ -62,7 +62,7 @@ export default function Navbar({ onMenuToggle, onBannerStateChange }) {
             <Zap size={14} className={styles.bannerIcon} />
             <span className={styles.bannerText}><strong>{broadcasts[0].title}:</strong> {broadcasts[0].message}</span>
           </div>
-          <button className={styles.bannerClose} onClick={closeBanner}><X size={14} /></button>
+          <button className={styles.bannerClose} onClick={closeBanner} aria-label="Close broadcast banner"><X size={14} /></button>
         </div>
       )}
       <header className={`${styles.navbar} ${scrolled ? styles.scrolled : ''}`} style={{ top: 'var(--banner-offset)' }} role="banner">

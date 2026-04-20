@@ -5,7 +5,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useApp } from '@/context/AppContext';
 import { REGISTRATION_FEED, CROWD_TIMELINE } from '@/data/mockData';
 import {
-  Share2, PlusCircle, BarChart2, Map, Radio
+  Share2, PlusCircle, BarChart2, Map, Radio, Zap
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend

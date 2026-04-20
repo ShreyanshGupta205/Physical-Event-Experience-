@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
+import { useRouter } from 'next/navigation';
 import {
   Home, Calendar, LayoutDashboard, Users, Settings,
   QrCode, Bell, BarChart2, PlusCircle, ShieldCheck,
@@ -13,11 +14,11 @@ import styles from './Sidebar.module.css';
 
 const NAV_CONFIG = {
   student: [
+    { href: '/student/events', icon: Calendar, label: 'My Sessions' },
     { href: '/discover', icon: Home, label: 'Discover Events' },
     { href: '/student', icon: LayoutDashboard, label: 'Experience Hub' },
     { href: '/student/networking', icon: Users, label: 'Networking' },
     { href: '/student/achievements', icon: Trophy, label: 'Achievements' },
-    { href: '/student/events', icon: Calendar, label: 'My Sessions' },
     { href: '/student/pass', icon: QrCode, label: 'Digital Passes' },
   ],
   organizer: [
@@ -52,6 +53,7 @@ const ROLE_COLORS = {
 export default function Sidebar({ open, onClose }) {
   const { role: contextRole, events, setRole } = useApp();
   const pathname = usePathname();
+  const router = useRouter();
   const [prediction, setPrediction] = useState('Analyzing telemetry...');
 
   // Derive role from path for visual consistency
@@ -83,16 +85,20 @@ export default function Sidebar({ open, onClose }) {
 
   return (
     <>
-      <aside className={`${styles.sidebar} ${open ? styles.open : ''}`}>
+      <aside 
+        className={`${styles.sidebar} ${open ? styles.open : ''}`}
+        aria-label="Sidebar navigation"
+        aria-hidden={!open && typeof window !== 'undefined' && window.innerWidth < 1024}
+      >
         <div className={styles.sidebarHeader}>
-          <div className={styles.rolePortalBadge} style={{ borderColor: config.primary + '33', background: config.glow }}>
-            <div className={styles.roleDot} style={{ background: config.primary }} />
+          <div className={styles.rolePortalBadge} style={{ borderColor: config.primary + '33', background: config.glow }} role="status">
+            <div className={styles.roleDot} style={{ background: config.primary }} aria-hidden="true" />
             <span style={{ color: config.primary }}>{config.label} Perspective</span>
           </div>
-          <button className={styles.mobileClose} onClick={onClose}><X size={18} /></button>
+          <button className={styles.mobileClose} onClick={onClose} aria-label="Close sidebar"><X size={18} /></button>
         </div>
 
-        <nav className={`${styles.sidebarNav} stagger`}>
+        <nav className={`${styles.sidebarNav} stagger`} aria-label="Main menu">
           {navItems.map((item, idx) => {
             const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
             return (
@@ -102,20 +108,21 @@ export default function Sidebar({ open, onClose }) {
                 className={`${styles.navLink} ${isActive ? styles.active : ''}`}
                 style={isActive ? { color: config.primary } : {}}
                 onClick={() => { if (window.innerWidth < 1024) onClose(); }}
+                aria-current={isActive ? 'page' : undefined}
               >
-                <div className={`${styles.navLinkIcon} ${isActive ? styles.active : ''}`} style={isActive ? { background: config.glow, color: config.primary } : {}}>
+                <div className={`${styles.navLinkIcon} ${isActive ? styles.active : ''}`} style={isActive ? { background: config.glow, color: config.primary } : {}} aria-hidden="true">
                   <item.icon size={18} />
                 </div>
                 <span className={styles.navLinkLabel}>{item.label}</span>
-                {isActive && <div className={styles.navActiveIndicator} style={{ background: config.primary }} />}
+                {isActive && <div className={styles.navActiveIndicator} style={{ background: config.primary }} aria-hidden="true" />}
               </Link>
             );
           })}
         </nav>
 
         <div className={styles.sidebarFooter}>
-          <div className={`${styles.aiStatusCard} glass-card`}>
-            <div className={styles.aiIconPulse}>
+          <div className={`${styles.aiStatusCard} glass-card`} role="complementary" aria-label="AI Insight">
+            <div className={styles.aiIconPulse} aria-hidden="true">
               <Zap size={14} fill="currentColor" />
             </div>
             <div className={styles.aiContent}>
@@ -125,8 +132,8 @@ export default function Sidebar({ open, onClose }) {
           </div>
           
           <div className={styles.perspectiveSwitcher}>
-            <span className={styles.switcherLabel}>DEBUG: SWITCH PERSPECTIVE</span>
-            <div className={styles.switcherGrid}>
+            <span className={styles.switcherLabel}>PLATFORM PERSPECTIVE</span>
+            <div className={styles.switcherGrid} role="group" aria-label="Switch user perspective">
               {['student', 'organizer', 'admin', 'staff'].map(r => (
                 <button 
                   key={r} 
@@ -137,6 +144,8 @@ export default function Sidebar({ open, onClose }) {
                     router.push(dest);
                   }}
                   title={`Switch to ${r} portal`}
+                  aria-pressed={activeRole === r}
+                  aria-label={`Switch to ${r} perspective`}
                 >
                   {r.charAt(0).toUpperCase()}
                 </button>

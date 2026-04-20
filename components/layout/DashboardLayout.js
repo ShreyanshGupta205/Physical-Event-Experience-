@@ -8,7 +8,7 @@ export default function DashboardLayout({ children, fullWidth = false }) {
   const [hasBanner, setHasBanner] = useState(false);
 
   return (
-    <div className="app-layout" style={{ '--banner-offset': hasBanner ? '36px' : '0px' }}>
+    <div className="app-layout" style={{ '--banner-offset': hasBanner ? '36px' : '0px' }} role="presentation">
       <Navbar 
         onMenuToggle={() => setSidebarOpen(s => !s)} 
         onBannerStateChange={setHasBanner}
@@ -16,7 +16,7 @@ export default function DashboardLayout({ children, fullWidth = false }) {
       
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
-      <main className="main-content" style={{ marginLeft: sidebarOpen ? 'var(--sidebar-width)' : '0' }}>
+      <main className="main-content" style={{ marginLeft: sidebarOpen ? 'var(--sidebar-width)' : '0' }} role="main" aria-label="Main page content">
         <div className={`page-content${fullWidth ? ' full-width' : ''} animate-fadeIn`} style={{ paddingTop: 'calc(var(--navbar-height) + var(--banner-offset) + 2rem)' }}>
           {children}
         </div>
