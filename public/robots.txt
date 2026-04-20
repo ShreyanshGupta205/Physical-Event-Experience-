@@ -1,0 +1,18 @@
+# Eventra Search Steering Protocol
+User-agent: *
+Allow: /
+Allow: /about
+Allow: /events
+Allow: /blog
+Allow: /contact
+
+# Protect internal orchestration portals
+Disallow: /admin/
+Disallow: /organizer/
+Disallow: /staff/
+Disallow: /student/
+Disallow: /api/
+Disallow: /auth/
+
+# Metadata Coordination
+Sitemap: https://smart-event-645235868525.us-central1.run.app/sitemap.xml

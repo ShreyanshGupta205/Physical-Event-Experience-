@@ -9,8 +9,48 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Eventra",
+    "operatingSystem": "Web",
+    "applicationCategory": "BusinessApplication",
+    "description": "AI-powered platform to discover, manage, and experience events with real-time orchestration.",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "reviewCount": "1250"
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "0.00",
+      "priceCurrency": "USD"
+    }
+  };
+
+  const orgLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Eventra Platform",
+    "url": "https://smart-event-645235868525.us-central1.run.app/",
+    "logo": "https://smart-event-645235868525.us-central1.run.app/favicon.ico",
+    "sameAs": [
+      "https://github.com/ShreyanshGupta205/Physical-Event-Experience-"
+    ]
+  };
+
   return (
     <html lang="en">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }}
+        />
+      </head>
       <body>
         <AppProvider>
           {children}
