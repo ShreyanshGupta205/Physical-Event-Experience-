@@ -76,6 +76,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (!auth) { setSessionLoading(false); return; }
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setSessionLoading(true);
       if (firebaseUser) {
@@ -150,7 +151,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      await signOut(auth);
+      if (auth) await signOut(auth);
       setIsLoggedIn(false);
       setUser(null);
     } catch (e) {
@@ -160,7 +161,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const registerForEvent = useCallback(async (event: AppEvent) => {
     try {
-      const token = await auth.currentUser?.getIdToken();
+      const token = await auth?.currentUser?.getIdToken();
       const res = await fetch('/api/registrations', {
         method: 'POST',
         headers: { 
@@ -190,7 +191,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const checkInAttendee = useCallback(async (eventId: string, passId: string) => {
     try {
-      const token = await auth.currentUser?.getIdToken();
+      const token = await auth?.currentUser?.getIdToken();
       const res = await fetch('/api/checkin', {
         method: 'POST',
         headers: { 
