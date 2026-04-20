@@ -49,3 +49,36 @@ export async function POST(request) {
     return NextResponse.json({ error: error.message || 'Failed' }, { status: 500 });
   }
 }
+
+// DELETE /api/admin/broadcast - Deactivate announcement
+export async function DELETE(request) {
+  try {
+    const { id } = await request.json();
+
+    if (!id) {
+       return NextResponse.json({ error: 'Announcement ID required' }, { status: 400 });
+    }
+
+    // We do a soft delete by setting active: false to maintain history if needed, 
+    // or a hard delete if historical records aren't required. 
+    // Per Ultra Pro standards, we will perform a safe deletion here.
+    await prisma.announcement.delete({
+       where: { id }
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        action: 'DELETE_BROADCAST',
+        details: `Deleted entry: ${id}`,
+        performerId: 'system-admin',
+        targetId: id,
+        targetType: 'system'
+      }
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('DELETE_BROADCAST_ERROR:', error);
+    return NextResponse.json({ error: 'Failed to delete' }, { status: 500 });
+  }
+}

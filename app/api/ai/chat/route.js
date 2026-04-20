@@ -44,6 +44,20 @@ export async function POST(req) {
     
     Response length: 1-3 sentences. Professional tone.`;
 
+    // Resilience Layer: Recursive Backoff for 429 errors
+    const fetchWithBackoff = async (fn, retries = 3, delay = 1000) => {
+      try {
+        return await fn();
+      } catch (err) {
+        if (retries > 0 && (err.message.includes('429') || err.message.includes('quota'))) {
+          console.warn(`AI Quota Hit. Retrying in ${delay}ms... (Retries left: ${retries})`);
+          await new Promise(res => setTimeout(res, delay));
+          return fetchWithBackoff(fn, retries - 1, delay * 2);
+        }
+        throw err;
+      }
+    };
+
     for (const modelName of MODEL_CANDIDATES) {
       try {
         const model = genAI.getGenerativeModel({ 
@@ -51,13 +65,16 @@ export async function POST(req) {
           systemInstruction: systemInstruction 
         });
         
-        const result = await model.generateContent(`User query: ${lastMsg}`);
+        const result = await fetchWithBackoff(() => model.generateContent(`User query: ${lastMsg}`));
         const response = await result.response;
         text = response.text();
         if (text) break;
       } catch (err) {
-        console.warn(`Model ${modelName} selection failed:`, err.message);
+        console.warn(`Model ${modelName} attempt failed:`, err.message);
         lastErr = err.message;
+        
+        // If we still hit 429 after retries, we stop this model and try the next one after a small pause
+        if (err.message.includes('429')) await new Promise(res => setTimeout(res, 500));
       }
     }
 

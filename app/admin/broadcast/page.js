@@ -22,6 +22,19 @@ export default function BroadcastCenter() {
     }
   };
 
+  const handleDelete = async (id) => {
+    if (!confirm('Are you sure you want to deactivate this broadcast?')) return;
+    try {
+      const res = await fetch('/api/admin/broadcast', {
+        method: 'DELETE',
+        body: JSON.stringify({ id })
+      });
+      if (res.ok) fetchBroadcasts();
+    } catch (e) {
+      console.error("Deletion failed", e);
+    }
+  };
+
   const handleSend = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -118,7 +131,13 @@ export default function BroadcastCenter() {
                        <p>{b.message}</p>
                        <div className="h-footer">
                           <span className="h-author">BY SYSTEM-ADMIN</span>
-                          <button className="h-delete"><Trash2 size={12} /></button>
+                          <button 
+                             className="h-delete" 
+                             onClick={() => handleDelete(b.id)}
+                             title="Delete Broadcast"
+                           >
+                             <Trash2 size={12} />
+                           </button>
                        </div>
                     </div>
                  ))}
