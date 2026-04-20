@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(request, { params }) {
   try {
-    const eventId = params.id;
+    const { id: eventId } = await params;
     
     if (!eventId) {
       return NextResponse.json({ error: 'Event ID required' }, { status: 400 });

@@ -135,9 +135,9 @@ export default function AuthPage() {
           </div>
           
           <div className="brand-footer">
-            <div className="brand-stat"><strong>42k</strong><span>Active Users</span></div>
+            <div className="brand-stat"><strong>SECURE</strong><span>Access Control</span></div>
             <div className="stat-sep" />
-            <div className="brand-stat"><strong>99.9%</strong><span>Scan Rate</span></div>
+            <div className="brand-stat"><strong>LIVE</strong><span>Telemetry Map</span></div>
           </div>
           
           <div className="dynamic-glow" style={{ background: roleData.glow }} />

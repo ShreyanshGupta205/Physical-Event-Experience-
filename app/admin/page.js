@@ -8,12 +8,10 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 
 const MONTHLY = [
-  { month: 'Nov', users: 820, events: 5 },
-  { month: 'Dec', users: 1340, events: 8 },
-  { month: 'Jan', users: 2100, events: 12 },
-  { month: 'Feb', users: 3400, events: 9 },
-  { month: 'Mar', users: 5200, events: 14 },
-  { month: 'Apr', users: 12847, events: 48 },
+  { month: 'Jan', users: 0, events: 0 },
+  { month: 'Feb', users: 0, events: 0 },
+  { month: 'Mar', users: 0, events: 0 },
+  { month: 'Apr', users: 0, events: 0 },
 ];
 
 export default function AdminPanel() {
@@ -75,9 +73,9 @@ export default function AdminPanel() {
         <section className="stats-mosaic animate-fadeInUp">
           {[
             { label: 'Event Universe', value: stats.totalEvents, icon: Globe, color: 'var(--primary)', trend: '+12% vs LY', sub: 'Active Sessions' },
-            { label: 'Platform Population', value: stats.totalUsers.toLocaleString(), icon: Users, color: 'var(--secondary)', trend: '+420 new', sub: 'Explorer Base' },
+            { label: 'Platform Population', value: stats.totalUsers.toLocaleString(), icon: Users, color: 'var(--secondary)', trend: 'Nominal', sub: 'Explorer Base' },
             { label: 'Global Throughput', value: stats.totalRegistrations.toLocaleString(), icon: Activity, color: 'var(--accent)', trend: 'Nominal', sub: 'Entries & Passes' },
-            { label: 'System Integrity', value: '99.9%', icon: ShieldCheck, color: '#4ade80', trend: 'Stable', sub: 'Operation Uptime' },
+            { label: 'System Integrity', value: '100%', icon: ShieldCheck, color: '#4ade80', trend: 'Optimal', sub: 'Operation Uptime' },
           ].map(s => (
             <div key={s.label} className="glass-card mosaic-brick">
               <div className="brick-top">
@@ -209,9 +207,9 @@ export default function AdminPanel() {
             <h3 className="section-title small">Node Infrastructure</h3>
             <div className="node-grid">
               {[
-                { name: 'AP-SOUTH-1', status: 'optimal', load: '12%' },
-                { name: 'US-EAST-1', status: 'optimal', load: '8%' },
-                { name: 'EU-CENTRAL-1', status: 'warning', load: '89%' },
+                { name: 'AP-SOUTH-1', status: 'optimal', load: '0%' },
+                { name: 'US-EAST-1', status: 'optimal', load: '0%' },
+                { name: 'EU-CENTRAL-1', status: 'optimal', load: '0%' },
               ].map(node => (
                 <div key={node.name} className="node-row">
                   <div className={`node-dot ${node.status}`} />

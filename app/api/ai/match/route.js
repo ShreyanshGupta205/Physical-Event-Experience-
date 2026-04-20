@@ -26,24 +26,21 @@ export async function POST(request) {
 
     let matches = [];
     if (aiParams) {
-        const model = aiParams.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
-        const result = await model.generateContent(prompt);
-        const responseText = result.response.text();
-        
-        const jsonMatch = responseText.match(/\[[\s\S]*\]/);
-        if (jsonMatch) {
-            matches = JSON.parse(jsonMatch[0]);
+        try {
+            const model = aiParams.getGenerativeModel({ model: 'gemini-1.5-flash' });
+            const result = await model.generateContent(prompt);
+            const responseText = result.response.text();
+            
+            const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+            if (jsonMatch) {
+                matches = JSON.parse(jsonMatch[0]);
+            }
+        } catch (aiErr) {
+            console.error('AI Matching Error (falling back):', aiErr);
         }
     }
 
-    // Fallback if AI fails or unavailable
-    if (matches.length === 0) {
-        matches = [
-            { peerId: 'p1', matchReason: 'Shared focus on React development and scalable architectures.' },
-            { peerId: 'p3', matchReason: 'Strategically aligned in the Cloud and DevOps sector.' }
-        ];
-    }
-
+    // No fallback if AI fails, return empty list
     return NextResponse.json(matches);
   } catch (error) {
     console.error('AI Matching Error:', error);

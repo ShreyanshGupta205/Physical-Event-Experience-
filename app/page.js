@@ -59,7 +59,7 @@ export default function SaaSPageV2() {
           <Reveal>
              <div className="live-badge animate-pulse">
                 <span className="pulse-dot" />
-                System Live: Managing 42,000+ Real-time Coordinates
+                Connectivity: Advanced AI Venue Orchestration
              </div>
           </Reveal>
 
@@ -161,18 +161,18 @@ export default function SaaSPageV2() {
             <Reveal>
                <div className="stats-grid glass-card">
                   <div className="s-item">
-                     <h3><Counter end={25000} suffix="+" /></h3>
-                     <p>Registrations Today</p>
+                     <h3><Counter end={0} suffix="+" /></h3>
+                     <p>Global Attendees</p>
                   </div>
                   <div className="v-div" />
                   <div className="s-item">
-                     <h3><Counter end={142} /></h3>
+                     <h3><Counter end={0} /></h3>
                      <p>Live Venues</p>
                   </div>
                   <div className="v-div" />
                   <div className="s-item">
-                     <h3><Counter end={99} suffix=".9%" /></h3>
-                     <p>Uptime Efficiency</p>
+                     <h3><Counter end={100} suffix="%" /></h3>
+                     <p>System Uptime</p>
                   </div>
                </div>
             </Reveal>
@@ -184,7 +184,7 @@ export default function SaaSPageV2() {
             <div className="cta-banner glass-card shine-grid">
                <Reveal>
                   <h2>Ready for the Smart Era?</h2>
-                  <p>Join 1,000+ elite organizations scaling with Eventra intelligence.</p>
+                  <p>Join the future of physical event management with Eventra intelligence.</p>
                   <div className={styles.heroActions}>
                     {isLoggedIn ? (
                       <Link href={dashboardLink} className="btn btn-primary btn-lg">Back to Dashboard</Link>

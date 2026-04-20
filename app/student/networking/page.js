@@ -162,6 +162,12 @@ export default function NetworkingPage() {
               </div>
             </div>
           ))}
+          {filteredPeers.length === 0 && (
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px', color: 'var(--text-faint)' }}>
+               <h3>Looking for Peers?</h3>
+               <p>Connect with other students by attending events or searching for specific skills.</p>
+            </div>
+          )}
         </div>
 
         {/* Pulse of the Community */}
@@ -174,11 +180,7 @@ export default function NetworkingPage() {
             <span className="live-tag">LIVE FEED</span>
           </div>
           <div className="pulse-grid">
-            {[
-              { user: 'Ishan S.', action: 'shared a React resource', time: '2m ago' },
-              { user: 'Ananya R.', action: 'is looking for a Hackathon team', time: '12m ago' },
-              { user: 'Kabir S.', action: 'started a thread on #GenerativeAI', time: '1h ago' },
-            ].map((p, i) => (
+            {[].map((p, i) => (
               <div key={i} className="pulse-item">
                 <div className="p-dot" />
                 <div className="p-content">
@@ -188,6 +190,9 @@ export default function NetworkingPage() {
                 <ArrowUpRight size={14} className="p-arrow" />
               </div>
             ))}
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', color: 'var(--text-faint)', fontSize: '0.8rem' }}>
+               No recent activity in the community.
+            </div>
           </div>
         </section>
       </div>

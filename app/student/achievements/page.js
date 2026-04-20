@@ -28,10 +28,10 @@ export default function AchievementsPage() {
         <header className="gamification-header">
           <div className="header-intel">
             <div className="discovery-badge">
-              <Award size={14} /> LEVEL 12 EXPLORER
+              <Award size={14} /> LEVEL 1 EXPLORER
             </div>
             <h1 className="Hub-heading">Your Achievements</h1>
-            <p className="HUB-lead">Unlock badges and earn Sparkle points by engaging with the event ecosystem.</p>
+            <p className="HUB-lead">Engage with events to unlock badges and earn Sparkle points.</p>
           </div>
 
           <div className="global-stats glass-card">
@@ -57,10 +57,10 @@ export default function AchievementsPage() {
         <section className="progress-section glass-card animate-fadeInUp">
           <div className="progress-header">
             <h3>Seasonal Progress</h3>
-            <span className="p-rank">Rank: Top 12%</span>
+            <span className="p-rank">Rank: Unranked</span>
           </div>
           <div className="progress-track">
-            <div className="track-fill" style={{ width: '65%' }}>
+            <div className="track-fill" style={{ width: '0%' }}>
               <div className="track-glow" />
             </div>
           </div>
@@ -105,6 +105,12 @@ export default function AchievementsPage() {
               {!ach.locked && <div className="unlocked-glow" />}
             </div>
           ))}
+          {filteredAchievements.length === 0 && (
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px', color: 'var(--text-faint)' }}>
+               <h3>Begin Your Journey</h3>
+               <p>Your achievements will appear here as you participate in more events.</p>
+            </div>
+          )}
         </div>
 
         {/* Leaderboard Teaser */}
@@ -115,11 +121,7 @@ export default function AchievementsPage() {
               <button className="btn btn-ghost btn-sm">Full Rankings <ChevronRight size={14} /></button>
            </div>
            <div className="leader-list">
-             {[
-               { id: 1, name: 'Aniketh P.', points: 14200, rank: 1, avatar: 'AP' },
-               { id: 2, name: 'Suhail M.', points: 12850, rank: 2, avatar: 'SM' },
-               { id: 3, name: 'Ishita K.', points: 12100, rank: 3, avatar: 'IK' },
-             ].map(leader => (
+             {[].map(leader => (
                <div key={leader.id} className="leader-row">
                  <span className="rank-num">#{leader.rank}</span>
                  <div className="leader-avatar">{leader.avatar}</div>
@@ -127,6 +129,9 @@ export default function AchievementsPage() {
                  <span className="leader-points">{leader.points.toLocaleString()}</span>
                </div>
              ))}
+             <div style={{ textAlign: 'center', color: 'var(--text-faint)', fontSize: '0.875rem' }}>
+                Leaderboard will populate as students earn points.
+             </div>
            </div>
         </section>
       </div>

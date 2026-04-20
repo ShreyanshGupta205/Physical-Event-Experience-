@@ -7,7 +7,7 @@ import {
   Zap, Calendar, MapPin, Users, Clock, 
   ChevronRight, ChevronLeft, Upload, Plus,
   Info, ShieldCheck, Rocket, Image as ImageIcon,
-  Tag, BarChart
+  Tag, BarChart, Sparkles
 } from 'lucide-react';
 
 export default function CreateEventPage() {

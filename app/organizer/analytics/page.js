@@ -5,21 +5,11 @@ import { CROWD_TIMELINE, EVENTS } from '@/data/mockData';
 import { BarChart, Bar, AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { TrendingUp, Users, CheckCircle, Clock } from 'lucide-react';
 
-const EVENT = EVENTS[0];
+const EVENT = EVENTS?.[0] || { title: 'N/A', registered: 0, capacity: 0, zones: [] };
 
-const MONTHLY_REG = [
-  { month: 'Jan', registrations: 120, checkIns: 98 },
-  { month: 'Feb', registrations: 230, checkIns: 185 },
-  { month: 'Mar', registrations: 310, checkIns: 278 },
-  { month: 'Apr', registrations: 423, checkIns: 0 },
-];
+const MONTHLY_REG = [];
 
-const CATEGORY_DATA = [
-  { name: 'Students', value: 65, color: '#6C63FF' },
-  { name: 'Professionals', value: 20, color: '#00D4AA' },
-  { name: 'Faculty', value: 10, color: '#FFA502' },
-  { name: 'Others', value: 5, color: '#FF4757' },
-];
+const CATEGORY_DATA = [];
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -50,8 +40,8 @@ export default function AnalyticsPage() {
     );
   }
 
-  const totalReg = MONTHLY_REG.reduce((s, d) => s + d.registrations, 0);
-  const convRate = Math.round((MONTHLY_REG.reduce((s, d) => s + d.checkIns, 0) / totalReg) * 100);
+  const totalReg = MONTHLY_REG.length > 0 ? MONTHLY_REG.reduce((s, d) => s + d.registrations, 0) : 0;
+  const convRate = totalReg > 0 ? Math.round((MONTHLY_REG.reduce((s, d) => s + d.checkIns, 0) / totalReg) * 100) : 0;
 
   return (
     <DashboardLayout>
@@ -159,26 +149,31 @@ export default function AnalyticsPage() {
               </tr>
             </thead>
             <tbody>
-              {EVENT.zones.map(z => {
-                const utilPct = Math.round(Math.random() * 40 + 55);
-                const risk = utilPct > 85 ? { label: 'High', color: 'badge-danger' } : utilPct > 60 ? { label: 'Medium', color: 'badge-warning' } : { label: 'Low', color: 'badge-success' };
+              {EVENT.zones?.map(z => {
+                const utilPct = 0;
+                const risk = { label: 'None', color: 'badge-ghost' };
                 return (
                   <tr key={z.id}>
                     <td><div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><div style={{ width: 10, height: 10, borderRadius: 2, background: z.color }} />{z.name}</div></td>
                     <td>{z.capacity.toLocaleString()}</td>
-                    <td style={{ fontWeight: 700, color: z.color }}>{Math.round(z.capacity * (utilPct / 100)).toLocaleString()}</td>
+                    <td style={{ fontWeight: 700, color: z.color }}>0</td>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <div className="progress-bar" style={{ flex: 1 }}>
-                          <div className="progress-fill" style={{ width: `${utilPct}%`, background: z.color }} />
+                          <div className="progress-fill" style={{ width: `0%`, background: z.color }} />
                         </div>
-                        <span style={{ fontSize: 12, fontWeight: 700, color: z.color, minWidth: 36 }}>{utilPct}%</span>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: z.color, minWidth: 36 }}>0%</span>
                       </div>
                     </td>
                     <td><span className={`badge ${risk.color}`}>{risk.label}</span></td>
                   </tr>
                 );
               })}
+              {EVENT.zones?.length === 0 && (
+                <tr>
+                   <td colSpan="5" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-faint)' }}>Initialize zones to see capacity metrics.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

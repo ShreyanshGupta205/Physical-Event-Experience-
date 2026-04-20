@@ -13,7 +13,7 @@ import styles from './Sidebar.module.css';
 
 const NAV_CONFIG = {
   student: [
-    { href: '/', icon: Home, label: 'Discover Events' },
+    { href: '/discover', icon: Home, label: 'Discover Events' },
     { href: '/student', icon: LayoutDashboard, label: 'Experience Hub' },
     { href: '/student/networking', icon: Users, label: 'Networking' },
     { href: '/student/achievements', icon: Trophy, label: 'Achievements' },

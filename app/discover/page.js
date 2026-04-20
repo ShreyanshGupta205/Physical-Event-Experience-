@@ -89,7 +89,7 @@ export default function DiscoverPage() {
   const [successModal, setSuccessModal] = useState(null);
   const [registering, setRegistering] = useState(false);
   const [regError, setRegError] = useState(null);
-  const [liveCount, setLiveCount] = useState(42810);
+  const [liveCount, setLiveCount] = useState(1);
 
   useEffect(() => {
     const t = setInterval(() => setLiveCount(c => c + Math.floor(Math.random() * 3)), 3000);

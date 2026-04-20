@@ -29,26 +29,24 @@ export async function POST(request) {
 
     let content = null;
     if (aiParams) {
-        const model = aiParams.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
-        const result = await model.generateContent(prompt);
-        const responseText = result.response.text();
-        
-        // Extract JSON from response (Gemini sometimes wraps in markdown blocks)
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-            content = JSON.parse(jsonMatch[0]);
+        try {
+            const model = aiParams.getGenerativeModel({ model: 'gemini-1.5-flash' });
+            const result = await model.generateContent(prompt);
+            const responseText = result.response.text();
+            
+            // Extract JSON from response (Gemini sometimes wraps in markdown blocks)
+            const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                content = JSON.parse(jsonMatch[0]);
+            }
+        } catch (aiErr) {
+            console.error('AI Generation Error (falling back):', aiErr);
         }
     }
 
-    // Fallback if AI fails
+    // No fallback if AI fails, return null or empty state
     if (!content) {
-        content = {
-            description: `Join us for ${title}, a breakthrough physical experience designed to push the boundaries of engagement and networking.`,
-            category: 'tech',
-            suggestedTags: ['Innovation', 'Physical', 'Eventra', 'Live'],
-            type: 'Conference',
-            color: '#6C63FF'
-        };
+        return NextResponse.json({ error: 'AI Service Unavailable' }, { status: 503 });
     }
 
     return NextResponse.json(content);

@@ -51,8 +51,8 @@ MISSION:
 Analyze this crowd telemetry. Provide a concise, highly strategic, 3-sentence operational prediction on what the organizers should expect regarding crowd flow over the next 30 minutes, and any actions they should take immediately. 
 Adopt a professional, tactical, "control center" tone.`;
 
-    // 3. Try Gemini — model names to attempt in sequence
-    const MODEL_CANDIDATES = ['gemini-1.5-flash-latest', 'gemini-1.5-flash', 'gemini-pro'];
+    // 3. Try Gemini — model names to attempt in sequence (Updated for 2026)
+    const MODEL_CANDIDATES = ['gemini-2.0-flash', 'gemini-flash-latest', 'gemini-pro-latest'];
     let text = null;
 
     if (aiParams) {

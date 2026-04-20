@@ -1,13 +1,16 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { MessageSquare, X, Send, Bot, Sparkles, Zap, Minimize2 } from 'lucide-react';
+import { MessageSquare, X, Send, Bot, Sparkles, Zap, Minimize2, Loader2 } from 'lucide-react';
+import { useApp } from '@/context/AppContext';
 
 export default function SmartAssistant() {
   const [isOpen, setIsOpen] = useState(false);
+  const { role, user } = useApp();
   const [messages, setMessages] = useState([
     { role: 'bot', text: 'Identity Verified. I am Eventra AI. How can I assist with your experience coordinates today?' }
   ]);
   const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -16,23 +19,38 @@ export default function SmartAssistant() {
     }
   }, [messages]);
 
-  const handleSend = (e) => {
+  const handleSend = async (e) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || loading) return;
 
     const userMsg = input;
-    setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
+    const newMessages = [...messages, { role: 'user', text: userMsg }];
+    setMessages(newMessages);
     setInput('');
+    setLoading(true);
 
-    setTimeout(() => {
-      let response = "I'm analyzing your request. Based on the event telemetry, the Hackathon main arena is currently at 45% capacity.";
-      if (userMsg.toLowerCase().includes('pass')) {
-        response = "Your digital entry token is ready in the 'Entry Pass' section of your student portal.";
-      } else if (userMsg.toLowerCase().includes('food')) {
-        response = "The Food Court is located in Zone Z3. Current wait time is approximately 5 minutes.";
+    try {
+      const res = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          messages: newMessages,
+          role: role,
+          name: user?.name
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setMessages(prev => [...prev, { role: 'bot', text: data.text }]);
+      } else {
+        setMessages(prev => [...prev, { role: 'bot', text: "Error: " + (data.error || "System telemetry gap detected.") }]);
       }
-      setMessages(prev => [...prev, { role: 'bot', text: response }]);
-    }, 1000);
+    } catch (err) {
+      setMessages(prev => [...prev, { role: 'bot', text: "Critical: AI connection lost. Please check your data link." }]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -73,6 +91,14 @@ export default function SmartAssistant() {
                 </div>
               </div>
             ))}
+            {loading && (
+              <div className="message-row bot animate-pulse">
+                <div className="message-bubble typing-indicator">
+                  <Loader2 size={16} className="animate-spin" />
+                  <span>AI is thinking...</span>
+                </div>
+              </div>
+            )}
           </div>
 
           <form className="chat-footer" onSubmit={handleSend}>
@@ -80,9 +106,10 @@ export default function SmartAssistant() {
               placeholder="Query the system..." 
               value={input}
               onChange={e => setInput(e.target.value)}
+              disabled={loading}
             />
-            <button type="submit" className="send-btn">
-              <Send size={16} />
+            <button type="submit" className="send-btn" disabled={loading}>
+              {loading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
             </button>
           </form>
 
@@ -131,6 +158,12 @@ export default function SmartAssistant() {
         }
         .bot .message-bubble { background: var(--bg-card2); border: 1px solid var(--border); color: var(--text); border-bottom-left-radius: 4px; }
         .user .message-bubble { background: var(--secondary); color: black; font-weight: 500; border-bottom-right-radius: 4px; }
+        
+        .typing-indicator { 
+          display: flex; align-items: center; gap: 0.5rem; 
+          font-size: 0.75rem; font-weight: 800; color: var(--secondary); 
+          background: var(--bg-card2);
+        }
 
         .chat-footer { padding: 1rem; background: var(--bg-glass); display: flex; gap: 0.75rem; border-top: 1px solid var(--border); position: relative; z-index: 2; }
         .chat-footer input { flex: 1; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.75rem 1rem; color: var(--text); font-size: 0.875rem; outline: none; }

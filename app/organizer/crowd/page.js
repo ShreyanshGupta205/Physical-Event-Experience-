@@ -14,13 +14,10 @@ function occupancyColor(occ) {
 }
 
 export default function CrowdMonitorPage() {
-  const event = EVENTS.find(e => e.id === MANAGED_EVENT_ID) || EVENTS[0];
-  const [zones, setZones] = useState(event.zones.map(z => ({ ...z, occupancy: Math.random() * 0.6 + 0.1 })));
-  const [gates, setGates] = useState(event.gates.map(g => ({ ...g })));
-  const [alerts, setAlerts] = useState([
-    { id: 1, msg: 'Gate A congestion detected — queue exceeds 40', level: 'warning', time: '2m' },
-    { id: 2, msg: 'Main Arena approaching 80% critical capacity', level: 'danger', time: '5m' },
-  ]);
+  const event = EVENTS.find(e => e.id === MANAGED_EVENT_ID) || EVENTS?.[0] || { title: 'N/A', zones: [], gates: [] };
+  const [zones, setZones] = useState(event.zones?.map(z => ({ ...z, occupancy: 0 })) || []);
+  const [gates, setGates] = useState(event.gates?.map(g => ({ ...g, queue: 0 })) || []);
+  const [alerts, setAlerts] = useState([]);
   const [selectedZone, setSelectedZone] = useState(null);
   const [liveMode, setLiveMode] = useState(true);
 
@@ -57,8 +54,8 @@ export default function CrowdMonitorPage() {
     return () => clearInterval(t);
   }, [liveMode]);
 
-  const totalOcc = zones.reduce((s, z) => s + z.occupancy * z.capacity, 0);
-  const totalCap = zones.reduce((s, z) => s + z.capacity, 0);
+  const totalOcc = zones?.reduce((s, z) => s + (z.occupancy || 0) * (z.capacity || 0), 0) || 0;
+  const totalCap = zones?.reduce((s, z) => s + (z.capacity || 0), 0) || 1; // Prevent div by zero
   const avgOcc = totalOcc / totalCap;
 
   return (
@@ -174,6 +171,11 @@ export default function CrowdMonitorPage() {
                     </div>
                   </div>
                 ))}
+                {alerts.length === 0 && (
+                  <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-faint)', fontSize: '0.8rem' }}>
+                    No system alerts detected.
+                  </div>
+                )}
               </div>
             </div>
           </aside>
